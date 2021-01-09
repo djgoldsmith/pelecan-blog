@@ -34,7 +34,7 @@ starts to become interesting.
 ## The Concept
 
 I have been experimenting with using Docker for this type of
-teaching. (See [Docker for Ethical Hacking]({filename}/docker/using_docker_to_teach.md) 
+teaching. (See [Docker for Ethical Hacking]({filename}/teaching/using_docker_to_teach.md) 
 for why I think docker is way forward).
 
 It turns out it is possible to connect the docker containers to an SSH

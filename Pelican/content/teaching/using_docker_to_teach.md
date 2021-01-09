@@ -18,7 +18,7 @@ based Linux trainer.  This is intended to give the students a way to
 practice the basic commands (they should already know). 
 
 
-The [Linux trainer]({filename}/docker/nixtrainer.md) Its relatively standard wargame stuff. SSH into each level, complete a
+The [Linux trainer]({filename}/teaching/nixtrainer.md) Its relatively standard wargame stuff. SSH into each level, complete a
 task and get the creds for the next. 
 
 Nice thing here is it weighs in at a mighty 190MB.  Compare that to
