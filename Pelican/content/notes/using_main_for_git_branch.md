@@ -1,4 +1,4 @@
-Title: "Moving from master to main in Git"
+Title: Moving from master to main in Git
 Date: 2020-12-18 12:00
 Category: Notes and Cheatsheets
 Tags: git, cli
