@@ -1,7 +1,6 @@
 Title: Hello (Pelican) World
-Date: 2020-01-11 14:00
-Category: Testing
-
+Date: 2021-01-11 14:00
+Category: General
 
 Decided that changing the blogging engine might make me write more.
 While I Quite liked Hugo, if I want to tinker Python seems much more
