@@ -5,6 +5,9 @@
 /* FONT PATHS
  * -------------------------- */
 
+
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css");
+
 @font-face {
   font-family: 'Hack';
   src: url('/theme/fonts/hack-regular.woff2?sha=3114f1256') format('woff2'), url('/theme/fonts/hack-regular.woff?sha=3114f1256') format('woff');
@@ -32,8 +35,6 @@
   font-weight: 700;
   font-style: italic;
 }
-
-
 
 
 body {
