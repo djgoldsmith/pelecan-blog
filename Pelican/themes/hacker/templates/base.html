@@ -11,7 +11,9 @@
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
-	
+
+   <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/hack.css">
+   
   {% endblock head %}
 </head>
 
@@ -23,27 +25,37 @@
     <header>
       <div class="jumbotron p-3 p-md-5 text-white rounded bg-dark">
         <div class="col-md-6 px-0">
-	  <h1 class="display-1">{{ SITENAME }}</h1>
+	  <h1 class="display-1"><a href="{{ SITEURL }}/">{{ SITENAME }}</a></h1>
 	  
 	  {% if SITESUBTITLE %}
 	  <p class="lead">{{ SITESUBTITLE }}</p>
 	  {% endif %}
         </div>
       </div>
+
+      <ul class="nav">
+	<li class="nav-item">
+	  <a class="nav-link active" aria-current="page" href="{{ SITEURL }}/">Blog</a>
+	</li>
+	<li class="nav-item">
+	  <a class="nav-link" href="{{ SUTEURL }}//pages/about-me.html">About</a>
+	</li>
+      </ul>
     </header><!-- /#banner -->
 
     <div class="row mt-5"> {# Main Content Row #}
+      <!-- Page Content -->
+      <div class="col-9">
+	{% block content %}
+	{% endblock %}
+      </div>
+      
+      <! -- Nav Stuff -->
       <div class="col"> {# Nav Div  #}
 	{% include "sidebar.html" %}
       </div> {# Nav Div #}
 
-      <!-- Page Content -->
-      <div class="col-9">
       
-	{% block content %}
-	{% endblock %}
-
-      </div>
      </div> {# Main Content Row #}
   
   <footer id="contentinfo" class="body">
