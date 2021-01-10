@@ -1,0 +1,54 @@
+{# Sidebar for Navigation #}
+
+<nav id="menu"><ul>
+
+    <h5>Recent Articles</h5>
+    <ul>
+    {% for article in articles %}
+    <li>
+      <a href="{{ SITEURL }}/{{ article.url}}">{{ article.title}}</a>
+      {{ article.locale_date }}
+    </li>
+    {% endfor %}
+    </ul>
+    
+    <h5>Categories</h5>
+    <ul>
+    {% for cat, null in categories %}
+    <li{% if cat == category %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ cat.url }}">{{ cat }}</a></li>
+    {% endfor %}
+    </ul>
+
+    
+    <h5>Top <a href="{{ SITEURL }}/tags">Tags</a></h5>
+    <ul class="tagcloud">
+    {% for tag in tag_cloud[:5] %}
+    <li>
+      <a href="{{ SITEURL }}/{{ tag.0.url }}">
+	{{ tag.0 }} ({{ tag.2 }})
+	</a>
+    </li>
+
+    {% endfor %}
+    </ul>
+
+    <h5>Info</h5> {# Static Pages #}
+    {% for p in pages %}
+    <li{% if p == page %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ p.url }}">{{ p.title }}</a></li>
+    {% endfor %}
+    
+    <h2>OLD</h2>
+    {% for title, link in MENUITEMS %}
+    <li><a href="{{ link }}">{{ title }}</a></li>
+    {% endfor %}
+    {% if DISPLAY_PAGES_ON_MENU %}
+    {% for p in pages %}
+    <li{% if p == page %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ p.url }}">{{ p.title }}</a></li>
+    {% endfor %}
+    {% endif %}
+    {% if DISPLAY_CATEGORIES_ON_MENU %}
+    {% for cat, null in categories %}
+    <li{% if cat == category %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ cat.url }}">{{ cat }}</a></li>
+    {% endfor %}
+    {% endif %}
+</ul></nav><!-- /#menu -->
