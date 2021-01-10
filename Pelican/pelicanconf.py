@@ -3,6 +3,7 @@
 
 AUTHOR = 'Dan Goldsmith'
 SITENAME = 'Dan Quixote Codes'
+SITESUBTITLE = 'Adventures in Teaching, Cyber Security, and Code'
 SITEURL = ''
 
 PATH = 'content'
@@ -11,7 +12,7 @@ TIMEZONE = 'Europe/London'
 
 DEFAULT_LANG = 'en'
 
-THEME = "simple"
+THEME = "themes/hacker"
 
 # Feed generation is usually not desired when developing
 FEED_ALL_ATOM = None
@@ -34,3 +35,8 @@ DEFAULT_PAGINATION = 10
 
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
+
+PLUGIN_PATHS = ["plugins"]
+PLUGINS = ["tag_cloud"]
+TAG_CLOUD_SORTING = 'size'
+TAG_CLOUD_BADGE = True
