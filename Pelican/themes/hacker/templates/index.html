@@ -1,0 +1,38 @@
+{% set navpage = "index" %}
+
+{% extends "base.html" %}
+
+{% block content %}
+<section id="content">
+{% block content_title %}
+<h2 class="terminal"> ~/blog$ ls -l</h2>
+{% endblock %}
+
+<ul id="post-list" class="postlist mt-2">
+{% for article in articles_page.object_list %}
+<li>
+  <article class="hentry mt-3">
+    <header class="terminal">
+      <h2 class="entry-title">
+	<a href="{{ SITEURL }}/{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title|striptags }}">{{ article.title }}</a>
+      </h2>
+    </header>
+    
+      <footer class="post-info">
+      <span>-rw-r--r---</span>
+      {% for author in article.authors %}
+      <a class="url fn" href="{{ SITEURL }}/{{ author.url }}">{{ author }}</a>
+      {% endfor %}
+      <time class="published" datetime="{{ article.date.isoformat() }}">
+	{{ article.date.strftime("%b %d %Y") }} </time>
+    </footer><!-- /.post-info -->
+    <div class="entry-content"> {{ article.summary }} </div><!-- /.entry-content -->
+</article></li>
+{% endfor %}
+</ol><!-- /#posts-list -->
+
+{% if articles_page.has_other_pages() %}
+    {% include 'pagination.html' %}
+{% endif %}
+</section><!-- /#content -->
+{% endblock content %}
