@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- #
 
-AUTHOR = 'Dan Goldsmith'
+#AUTHOR = 'Dan Goldsmith'
+AUTHOR = 'DanG'
 SITENAME = 'Dan Quixote Codes'
 SITESUBTITLE = 'Adventures in Teaching, Cyber Security, and Code'
-SITEURL = ''
+#SITEURL = 'https://dan.quixote.codes'
 
 PATH = 'content'
 
