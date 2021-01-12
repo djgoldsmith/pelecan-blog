@@ -25,6 +25,7 @@ $cyan:    #5bc0de !default;
 $terminal: #39ff14 !default;
 
 
+
 $new-fg: #dcdccc;
 $new-bg: rgb(201, 209, 217);
 $git-btn: #21262D;
@@ -32,6 +33,7 @@ $git-bg: #0D1117;
 	 
 $body-bg:                   $git-bg; //$gray-900; // !default;
 $body-color:                $new-fg; // !default;
+$headings-color:            $gray-400;
 
 $link-color: $green;
 //$link-color: $terminal;
@@ -49,7 +51,7 @@ $nav-font-size: $font-size-base * 1.25;
 
 
 // Highlight the Jumbotron
-.highlight {
+.my-highlight {
     background-color: $git-btn; //$gray-800;
     box-shadow: 0 0.25rem 0.5rem $gray-700;
 
@@ -61,8 +63,6 @@ $nav-font-size: $font-size-base * 1.25;
 }
 
 
-
-
 .nav-link {
     font-size: $nav-font-size;
 
@@ -71,8 +71,11 @@ $nav-font-size: $font-size-base * 1.25;
 }
 }
 
-
-
+.navtoggle{
+    font-size: $nav-font-size;
+    color: $terminal;
+}
+    
 .terminal {
     color: $terminal;
     font-family: Hack, monospace;
@@ -94,9 +97,14 @@ $nav-font-size: $font-size-base * 1.25;
     }
 }
 
-.pre {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+.highlight { //Highlight for Pygmnets
+    padding: 1rem;
+    font-family: Hack, monospace;
+    background-color: $git-btn; //$gray-800;
+}
+    
+
+pre {
     font-family: Hack, monospace;
 }
 

@@ -2,10 +2,10 @@
 .my-rounded {
   border-radius: 1.25rem; }
 
-.highlight {
+.my-highlight {
   background-color: #21262D;
   box-shadow: 0 0.25rem 0.5rem #52575c; }
-  .highlight.jumbotron {
+  .my-highlight.jumbotron {
     background-color: #21262D;
     box-shadow: 0 0.25rem 0.5rem #3a3f44; }
 
@@ -13,6 +13,10 @@
   font-size: 1.875rem; }
   .nav-link.active {
     color: #39ff14; }
+
+.navtoggle {
+  font-size: 1.875rem;
+  color: #39ff14; }
 
 .terminal {
   color: #39ff14;
@@ -26,9 +30,12 @@
 .postlist a {
   text-decoration: none; }
 
-.pre {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+.highlight {
+  padding: 1rem;
+  font-family: Hack, monospace;
+  background-color: #21262D; }
+
+pre {
   font-family: Hack, monospace; }
 
 /*!
@@ -103,7 +110,8 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   margin-top: 0;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  line-height: 1.2; }
+  line-height: 1.2;
+  color: #ced4da; }
 
 h1, .h1 {
   font-size: calc(1.5rem + 3vw); }
@@ -4550,6 +4558,7 @@ textarea.form-control-lg {
   padding: 0.5rem 1rem;
   margin-bottom: 0;
   font-size: calc(1.275rem + 0.3vw);
+  color: #ced4da;
   background-color: #f0f0f0;
   border-bottom: 1px solid #d8d8d8;
   border-top-left-radius: calc(0.3rem - 1px);
