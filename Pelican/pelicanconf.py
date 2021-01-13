@@ -4,7 +4,7 @@
 #AUTHOR = 'Dan Goldsmith'
 AUTHOR = 'DanG'
 SITENAME = 'Dan Quixote Codes'
-SITESUBTITLE = 'Adventures in Teaching, Cyber Security, and Code'
+SITESUBTITLE = 'Adventures in Teaching, Programming, and Cyber Security.'
 #SITEURL = 'https://dan.quixote.codes'
 
 PATH = 'content'
@@ -41,3 +41,13 @@ PLUGIN_PATHS = ["plugins"]
 PLUGINS = ["tag_cloud"]
 TAG_CLOUD_SORTING = 'size'
 TAG_CLOUD_BADGE = True
+
+
+MARKDOWN = {
+    'extension_configs': {
+        'markdown.extensions.codehilite': {'css_class': 'highlight'},
+        'markdown.extensions.extra': {},
+        'markdown.extensions.meta': {},
+    },
+    'output_format': 'html5',
+}

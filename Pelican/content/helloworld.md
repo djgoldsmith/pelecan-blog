@@ -1,8 +1,11 @@
 Title: Hello (Pelican) World
 Date: 2021-01-11 14:00
 Category: General
+Tags: python, web
 Summary: >
-	Moving to the Pelican site generator
+	Moving to the Pelican site generator and messing about with themes
+
+# Moving to the Pelican static site generator.
 
 Decided that changing the blogging engine might make me write more.
 While I Quite liked Hugo, if I want to tinker Python seems much more
@@ -19,6 +22,9 @@ And some playing around with the theme
  - More Bullet points
  - Even more pullet poitns
  
+ 1. Enumeration
+ 1. More Enumeration
+ 1. And Even more numbers
  
 ## Code
 

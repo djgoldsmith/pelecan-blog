@@ -24,50 +24,69 @@ $teal:    #20c997 !default;
 $cyan:    #5bc0de !default;
 $terminal: #39ff14 !default;
 
-
+$heading-color: #58a6ff;
 
 $new-fg: #dcdccc;
 $new-bg: rgb(201, 209, 217);
 $git-btn: #21262D;
+$code-bg: #272822;
 $git-bg: #0D1117;
 	 
 $body-bg:                   $git-bg; //$gray-900; // !default;
 $body-color:                $new-fg; // !default;
 $headings-color:            $gray-400;
 
-$link-color: $green;
-//$link-color: $terminal;
+//$link-color: $green;
+$link-color: $terminal;
 
 $display-font-weight: 500;
 
 
-$font-size-base: 1.5rem;
-$nav-font-size: $font-size-base * 1.25;
+$font-size-base: 1rem; //We need this from the main (but I dont know how t get it
+$nav-font-size: $font-size-base * 1.5;
 //$lead-font-size = 
 .my-rounded {
     border-radius: 1.25rem;
 }
 
 
+// Make the headings in the entry stick out
+.entry-content {
+    h1,h2,h3,h4,h5 {
+	color: $heading-color;
+	padding-top: 1rem;
+
+	&:before {
+	    content: "# ";
+	}
+    }
+	
+}
+
 
 // Highlight the Jumbotron
 .my-highlight {
     background-color: $git-btn; //$gray-800;
-    box-shadow: 0 0.25rem 0.5rem $gray-700;
+    box-shadow: 0 0.25rem 0.5rem $code-bg; //$gray-700;
 
     &.jumbotron{
-	//background-color: $black;
-	background-color: $git-btn; //$gray-800;
-	box-shadow: 0 0.25rem 0.5rem $gray-800 //$terminal;
+	background-color: $git-btn;
+	box-shadow: 0 0.25rem 0.5rem $code-bg;//$gray-800;
     }
+}
+
+.navbar {
+    background-color: $git-btn; //$gray-800;
+    box-shadow: 0 0.25rem 0.5rem $gray-800; ///$terminal;
 }
 
 
 .nav-link {
     font-size: $nav-font-size;
-
+    color: darken($new-fg, 25%);
+    
     &.active {
-    color: $terminal;
+	color: $new-fg; //$terminal;
 }
 }
 
@@ -75,12 +94,25 @@ $nav-font-size: $font-size-base * 1.25;
     font-size: $nav-font-size;
     color: $terminal;
 }
-    
+
+.navbar-brand {
+    color: $body-color;
+}
+
 .terminal {
     color: $terminal;
     font-family: Hack, monospace;
+
+    a {
+	text-decoration: none;
+    }	
 }
 
+.dark-terminal{
+    color: darken($terminal, 20%);
+    font-family: Hack, monospace;
+    
+}
 
 .postlist {
     li {
@@ -103,12 +135,27 @@ $nav-font-size: $font-size-base * 1.25;
     background-color: $git-btn; //$gray-800;
 }
     
+.article-category {
+    float: right;
 
-pre {
-    font-family: Hack, monospace;
+    &:before {
+	content: "*";
+    }
 }
+/*
+    content: "";
+	background-image: url("data=
+		 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+  
+</svg>;
+    }
+*/	   
 
 
+
+.author {
+    margin-bottom: 0;
+}
 
 
 @import "../bootstrap/scss/bootstrap";

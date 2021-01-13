@@ -1,0 +1,8 @@
+{% extends "index.html" %}
+
+{% block title %}{{ SITENAME }} - {{ category }} category{% endblock %}
+
+{% block content_title %}
+<h2 class="dark-terminal">$ find . --category <span class="terminal">{{ category }}</span></h2>
+{% endblock %}
+

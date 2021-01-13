@@ -5,29 +5,33 @@
 {% block content %}
 <section id="content">
 {% block content_title %}
-<h2 class="terminal"> ~/blog$ ls -l</h2>
+<h2 class="dark-terminal">$ ls -l ~/blog</h2>
 {% endblock %}
 
-<ul id="post-list" class="postlist mt-2">
+<ul id="post-list" class="postlist mt-3">
 {% for article in articles_page.object_list %}
 <li>
-  <article class="hentry mt-3">
+  <article class="postlist-item mb-2">
     <header class="terminal">
       <h2 class="entry-title">
 	<a href="{{ SITEURL }}/{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title|striptags }}">{{ article.title }}</a>
       </h2>
-    </header>
-    
-      <footer class="post-info">
       <span>-rw-r--r---</span>
       {% for author in article.authors %}
       <a class="url fn" href="{{ SITEURL }}/{{ author.url }}">{{ author }}</a>
       {% endfor %}
       <time class="published" datetime="{{ article.date.isoformat() }}">
 	{{ article.date.strftime("%b %d %Y") }} </time>
-    </footer><!-- /.post-info -->
+      {# And pull the article category to the right #}
+      {% if article.category %}
+      <span class="article-category d-none d-lg-block">
+	<a href="{{ SITEURL }}/{{ article.category.url }}">{{ article.category }}</a>
+      </span>
+      {% endif %}
+    </header>
     <div class="entry-content"> {{ article.summary }} </div><!-- /.entry-content -->
-</article></li>
+  </article>
+</li>
 {% endfor %}
 </ol><!-- /#posts-list -->
 
