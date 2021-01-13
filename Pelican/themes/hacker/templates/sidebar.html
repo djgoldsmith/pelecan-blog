@@ -1,0 +1,56 @@
+{# Sidebar for Navigation #}
+
+<nav id="menu"><ul>
+
+
+
+    {#
+    <h5>Recent Articles</h5>
+    <ul>
+      {% for article in articles %}
+      
+    <li>
+      <a href="{{ SITEURL }}/{{ article.url}}">{{ article.title}}</a>
+      {{ article.locale_date }}
+    </li>
+    {% endfor %}
+    </ul>
+    #}
+
+
+    <h5>Categories</h5>
+    <ul>
+      {% for cat, null in categories %}
+
+      <li {% if cat == category %}
+	  class="active bi bi-folder2-open"
+	  
+	  {% else %}
+	  class="bi bi-folder"
+	  {% endif %}
+	>  
+	<a href="{{ SITEURL }}/{{ cat.url }}">{{ cat }}</a></li>
+    {% endfor %}
+    </ul>
+
+    
+    <h5><a href="{{ SITEURL }}/tags">Tags</a></h5>
+    <ul class="tagcloud">
+    {% for tag in tag_cloud[:5] %}
+    <li>
+      <i  class="bi bi-tag"></i><a href="{{ SITEURL }}/{{ tag.0.url }}">
+	{{ tag.0 }} ({{ tag.2 }})
+	</a>
+    </li>
+
+    {% endfor %}
+    </ul>
+
+    <h5>Info</h5> {# Static Pages #}
+    <ul>
+    {% for p in pages %}
+    <li{% if p == page %} class="active"{% endif %}><a href="{{ SITEURL }}/{{ p.url }}">{{ p.title }}</a></li>
+    {% endfor %}
+    </ul>
+
+</nav><!-- /#menu -->

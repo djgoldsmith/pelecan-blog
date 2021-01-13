@@ -43,8 +43,8 @@ have a great blog post on a the whole "whitelist", "blacklist" issue.
 
 A trivial change we can make via the global git configuration
 
-```term
-git config --global init.defaultBranch main
+```
+$ git config --global init.defaultBranch main
 ```
 
 ## Modifying existing repo's to use main
@@ -52,14 +52,14 @@ git config --global init.defaultBranch main
 If we have older repositories they may use the old master by default.
 To change this to main by *moving* the branch.  This should retain all the history
 
-```term
-git branch -m master main
+```
+$ git branch -m master main
 ```
 
 Then push with 
 
-```term
-git push -u origin main
+```.bash
+$ git push -u origin main
 ```
 
 

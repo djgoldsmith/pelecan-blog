@@ -1,3 +1,9 @@
+title: Arch Setup
+date: 2018-01-10T16:27:09Z
+status: Draft
+tags: Linux, Arch
+
+
 # Notes on Arch Linux Setup
 
 Setup of Arch Linux system for the CUEH course.

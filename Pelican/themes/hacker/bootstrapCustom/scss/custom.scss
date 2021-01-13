@@ -1,0 +1,167 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css");
+
+$white:    #fff !default;
+$gray-100: #f8f9fa !default;
+$gray-200: #e9ecef !default;
+$gray-300: #dee2e6 !default;
+$gray-400: #ced4da !default;
+$gray-500: #999 !default;
+$gray-600: #7a8288 !default;
+$gray-700: #52575c !default;
+$gray-800: #3a3f44 !default;
+$gray-900: #272b30 !default;
+$black:    #000 !default;
+
+$blue:    #007bff !default;
+$indigo:  #6610f2 !default;
+$purple:  #6f42c1 !default;
+$pink:    #e83e8c !default;
+$red:     #ee5f5b !default;
+$orange:  #fd7e14 !default;
+$yellow:  #f89406 !default;
+$green:   #62c462 !default;
+$teal:    #20c997 !default;
+$cyan:    #5bc0de !default;
+$terminal: #39ff14 !default;
+
+$heading-color: #58a6ff;
+
+$new-fg: #dcdccc;
+$new-bg: rgb(201, 209, 217);
+$git-btn: #21262D;
+$code-bg: #272822;
+$git-bg: #0D1117;
+	 
+$body-bg:                   $git-bg; //$gray-900; // !default;
+$body-color:                $new-fg; // !default;
+$headings-color:            $gray-400;
+
+//$link-color: $green;
+$link-color: $terminal;
+
+$display-font-weight: 500;
+
+
+$font-size-base: 1rem; //We need this from the main (but I dont know how t get it
+$nav-font-size: $font-size-base * 1.5;
+//$lead-font-size = 
+.my-rounded {
+    border-radius: 1.25rem;
+}
+
+
+// Make the headings in the entry stick out
+.entry-content {
+    h1,h2,h3,h4,h5 {
+	color: $heading-color;
+	padding-top: 1rem;
+
+	&:before {
+	    content: "# ";
+	}
+    }
+	
+}
+
+
+// Highlight the Jumbotron
+.my-highlight {
+    background-color: $git-btn; //$gray-800;
+    box-shadow: 0 0.25rem 0.5rem $code-bg; //$gray-700;
+
+    &.jumbotron{
+	background-color: $git-btn;
+	box-shadow: 0 0.25rem 0.5rem $code-bg;//$gray-800;
+    }
+}
+
+.navbar {
+    background-color: $git-btn; //$gray-800;
+    box-shadow: 0 0.25rem 0.5rem $gray-800; ///$terminal;
+}
+
+
+.nav-link {
+    font-size: $nav-font-size;
+    color: darken($new-fg, 25%);
+    
+    &.active {
+	color: $new-fg; //$terminal;
+}
+}
+
+.navtoggle{
+    font-size: $nav-font-size;
+    color: $terminal;
+}
+
+.navbar-brand {
+    color: $body-color;
+}
+
+.terminal {
+    color: $terminal;
+    font-family: Hack, monospace;
+
+    a {
+	text-decoration: none;
+    }	
+}
+
+.dark-terminal{
+    color: darken($terminal, 20%);
+    font-family: Hack, monospace;
+    
+}
+
+.postlist {
+    li {
+	list-style-type: none;
+    }
+
+    footer {
+	color: $terminal;
+	font-family: Hack, monospace
+    }
+    
+    a {
+	text-decoration: none;
+    }
+}
+
+.highlight { //Highlight for Pygmnets
+    padding: 1rem;
+    font-family: Hack, monospace;
+    background-color: $git-btn; //$gray-800;
+}
+    
+.article-category {
+    float: right;
+
+    &:before {
+	content: "*";
+    }
+}
+/*
+    content: "";
+	background-image: url("data=
+		 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+  
+</svg>;
+    }
+*/	   
+
+
+
+.author {
+    margin-bottom: 0;
+}
+
+
+@import "../bootstrap/scss/bootstrap";
+
+
+
+//body {
+//    font-family: Hack, monospace;
+//}
