@@ -31,7 +31,10 @@ $new-bg: rgb(201, 209, 217);
 $git-btn: #21262D;
 $code-bg: #272822;
 $git-bg: #0D1117;
-	 
+
+$box-background: rgba(56, 139, 253, 0.1);
+$box-border: rgba(56, 139, 253, 0.4);
+
 $body-bg:                   $git-bg; //$gray-900; // !default;
 $body-color:                $new-fg; // !default;
 $headings-color:            $gray-400;
@@ -49,6 +52,17 @@ $nav-font-size: $font-size-base * 1.5;
     border-radius: 1.25rem;
 }
 
+
+
+// Headers on the post content
+.post-info {
+    padding: 1rem;
+    box-sizing: border-box;
+    border: 1px solid;
+    border-radius: 1.25rem;
+    border-color: $box-border;
+    background-color: $box-background;
+}
 
 // Make the headings in the entry stick out
 .entry-content {
