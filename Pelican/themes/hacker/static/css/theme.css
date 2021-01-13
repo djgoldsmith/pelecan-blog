@@ -2,6 +2,14 @@
 .my-rounded {
   border-radius: 1.25rem; }
 
+.post-info {
+  padding: 1rem;
+  box-sizing: border-box;
+  border: 1px solid;
+  border-radius: 1.25rem;
+  border-color: rgba(56, 139, 253, 0.4);
+  background-color: rgba(56, 139, 253, 0.1); }
+
 .entry-content h1, .entry-content .h1, .entry-content h2, .entry-content .h2, .entry-content h3, .entry-content .h3, .entry-content h4, .entry-content .h4, .entry-content h5, .entry-content .h5 {
   color: #58a6ff;
   padding-top: 1rem; }
