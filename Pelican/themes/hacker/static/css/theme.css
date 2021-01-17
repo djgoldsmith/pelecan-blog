@@ -15,6 +15,8 @@
   padding-top: 1rem; }
   .entry-content h1:before, .entry-content .h1:before, .entry-content h2:before, .entry-content .h2:before, .entry-content h3:before, .entry-content .h3:before, .entry-content h4:before, .entry-content .h4:before, .entry-content h5:before, .entry-content .h5:before {
     content: "# "; }
+.entry-content h3, .entry-content .h3 {
+  font-size: 1.5rem; }
 
 .my-highlight {
   background-color: #21262D;
