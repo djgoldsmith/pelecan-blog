@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Dan Quixote Codes - teaching</title><link href="https://dan.quixote.codes/" rel="alternate"></link><link href="https://dan.quixote.codes/feeds/teaching.atom.xml" rel="self"></link><id>https://dan.quixote.codes/</id><updated>2019-06-26T08:15:04+01:00</updated><subtitle>Adventures in Teaching, Programming, and Cyber Security.</subtitle><entry><title>On Demand, per user Docker shells</title><link href="https://dan.quixote.codes/on-demand-per-user-docker-shells.html" rel="alternate"></link><published>2019-06-26T08:15:04+01:00</published><updated>2019-06-26T08:15:04+01:00</updated><author><name>DanG</name></author><id>tag:dan.quixote.codes,2019-06-26:/on-demand-per-user-docker-shells.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;Experiments with Spawning Docker Containers on demand over an SSH connection.&lt;/p&gt;
+&lt;/blockquote&gt;</summary><content type="html">&lt;p&gt;A common use case when we are teaching on the hacking modules is for
+the student to gain access to a server and do some task.&lt;/p&gt;
+&lt;p&gt;Previously we have used VM's for this, setting up the challenge in a
+"Stripped down" VM and having the student download it to play with in
+the Lab. While this works, its not without its disadvantages:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The average VM weighs in at a couple of GB, its not a lot, but it
+     takes time to download. (its certainly prohibitive on my majestic
+     1MB connection at home)&lt;/li&gt;
+&lt;li&gt;Ensuring the student gets a "Fresh" copy of the VM free of anyone
+     elses exploit.  Personally, I think there is nothing more
+     frustrating, than finding a copy of the root flag, or someone
+     elses POC, as it ruins the challenge.&lt;/li&gt;
+&lt;li&gt;It needs virtualisation software, while this is installed by default
+     in the Hacking Lab, its not on the standard Uni Image, and
+     depending on the students own hardware it may limit the
+     opportunity to practice outside of the lab&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We could set up a "Cloud" version of the target, allowing the student
+to connect remotely (in much the same way as CTF like
+&lt;a href="http://hackthebox.eu"&gt;Hack the Box&lt;/a&gt; do.)  This works well, for access outside of
+the lab but we get major issues with ensuring the student gets the
+"Fresh" copy.  Additionally, I have around 50 challenges (and counting,
+and that's just one module), so resource management on the server we have
+starts to become interesting.&lt;/p&gt;
+&lt;h2&gt;The Concept&lt;/h2&gt;
+&lt;p&gt;I have been experimenting with using Docker for this type of
+teaching. (See &lt;a href="https://dan.quixote.codes/docker-for-teaching-eh.html"&gt;Docker for Ethical Hacking&lt;/a&gt; 
+for why I think docker is way forward).&lt;/p&gt;
+&lt;p&gt;It turns out it is possible to connect the docker containers to an SSH
+session. So each time a user connects over SSH, a new docker container
+is fired up with the image used based on the username they are
+connecting with.  This would allow containers to be started "On
+Demand".&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;NOTE: I was inspired by the excellent Over the Wire Advent
+challenges. which used a similar approach.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;Requirements&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Accessible outside of the hacking lab&lt;/li&gt;
+&lt;li&gt;Allow students access challenges "On Demand"&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Sandbox&lt;/em&gt; each student onto their own instance, to stop
+   "accidental" P0wning through someone elses hard work.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Implementation&lt;/h2&gt;
+&lt;h3&gt;First Cut&lt;/h3&gt;
+&lt;p&gt;The key part of our implementation is that we can create (and / or)
+attach to a running container, This is pretty standard docker stuff.
+For example, lets imagine we have the container
+&lt;em&gt;7024cem/ctf-lsudo-demo&lt;/em&gt;, and want to connect as the unprivileged
+&lt;em&gt;cueh&lt;/em&gt; user.&lt;/p&gt;
+&lt;p&gt;On the command line we could use:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="n"&gt;dang&lt;/span&gt;&lt;span class="p"&gt;@&lt;/span&gt;&lt;span class="n"&gt;dang&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;laptop&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;docker&lt;/span&gt; &lt;span class="n"&gt;run&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="n"&gt;cueh&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;workdir&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;home&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;cueh&lt;/span&gt; &lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="n"&gt;rm&lt;/span&gt; &lt;span class="mi"&gt;7024&lt;/span&gt;&lt;span class="n"&gt;cem&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;ctf&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;lsudo&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;demo&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bash&lt;/span&gt;                                                                                               
+&lt;span class="n"&gt;cueh&lt;/span&gt;&lt;span class="mf"&gt;@9e63&lt;/span&gt;&lt;span class="nl"&gt;b8eadc4c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;pwd&lt;/span&gt;
+&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;home&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;cueh&lt;/span&gt;
+&lt;span class="n"&gt;cueh&lt;/span&gt;&lt;span class="mf"&gt;@9e63&lt;/span&gt;&lt;span class="nl"&gt;b8eadc4c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt; &lt;span class="n"&gt;ls&lt;/span&gt;
+&lt;span class="n"&gt;README&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;txt&lt;/span&gt;
+&lt;span class="n"&gt;cueh&lt;/span&gt;&lt;span class="mf"&gt;@9e63&lt;/span&gt;&lt;span class="nl"&gt;b8eadc4c&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="err"&gt;$&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;As we can set the shell that is spawned when the user logs in, its
+easy enough to create a script that runs this command and set it as
+the users default shell.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;[root@zaphod ~]# cat /home/testuser/runshell &lt;/span&gt;
+&lt;span class="err"&gt;#!/bin/bash&lt;/span&gt;
+&lt;span class="err"&gt;docker run -it --user cueh --workdir /home/cueh --rm 7024cem/ctf-lsudo-demo /bin/bash&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we add it the &lt;em&gt;/etc/shells&lt;/em&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;root@zaphod testuser&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;cat&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;etc&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;shells&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;
+&lt;span class="err"&gt;#&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;Pathnames&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;of&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;valid&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;login&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;shells&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="err"&gt;#&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;See&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;shells&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="n"&gt;details&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;sh&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;bash&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;home&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;testuser&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;runshell&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And set it as the users default shell:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;[root@zaphod ~]# chsh -s /home/testuser/runshell testuser&lt;/span&gt;
+&lt;span class="err"&gt;Changing shell for testuser.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Each time they login a docker container is launched, and the user is dropped into it.&lt;/p&gt;
+&lt;h2&gt;Implementation.  Second Cut.&lt;/h2&gt;
+&lt;p&gt;While this is pretty cool, we have some issues.  First off is the 50+
+Containers.  While I could create a separate spawning script for each,
+"I ain't got time for that stuff". Also I want to make it nice and easy
+to add new elements.&lt;/p&gt;
+&lt;p&gt;So I cobbled together a quick and dirty python script that checks in a
+database, (yes I appreciate that is probably overkill, but it also
+works nicely with the flag server), and uses the python docker
+bindings to spawn the relevant container.&lt;/p&gt;
+&lt;p&gt;The stripped down version of the code is below (removed various error check etc, fill version is in the git repo)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;docker&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dockerpty&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;startDocker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ipadd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Start a docker container&lt;/span&gt;
+
+&lt;span class="sd"&gt;    @param user: User who as initiated the SSH connection&lt;/span&gt;
+&lt;span class="sd"&gt;    @param ipadd: Ip address conneciton was initiated from&lt;/span&gt;
+&lt;span class="sd"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+
+    &lt;span class="c1"&gt;#Create docker Client&lt;/span&gt;
+    &lt;span class="n"&gt;client&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;docker&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;from_env&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="c1"&gt;#Get the relevant container from DB driver&lt;/span&gt;
+    &lt;span class="n"&gt;thecontainer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getDetails&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c1"&gt;# ...SNIP... Setting Various options&lt;/span&gt;
+
+    &lt;span class="c1"&gt;#Create a Container&lt;/span&gt;
+    &lt;span class="n"&gt;container&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;containers&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="n"&gt;image&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;working_dir&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;workdir&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;command&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;thecommand&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;auto_remove&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;autoremove&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;tty&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;stdin_open&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;
+        &lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c1"&gt;#And Connect it to a pseudoterminal&lt;/span&gt;
+    &lt;span class="n"&gt;dockerpty&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;container&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can then call the script with command line arguments to fill in the relevant parts.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vm"&gt;__name__&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;__main__&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;basicConfig&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;level&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DEBUG&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Testing&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c1"&gt;#Get the thing to accept command line args&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;warning&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Called without user&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="n"&gt;args&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;
+    &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Arguments are &lt;/span&gt;&lt;span class="si"&gt;{0}&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+    &lt;span class="n"&gt;theuser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;--&amp;gt; Starting process with user &lt;/span&gt;&lt;span class="si"&gt;{0}&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;theuser&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+    &lt;span class="c1"&gt;#And get the IP address&lt;/span&gt;
+    &lt;span class="n"&gt;theIp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;argv&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;--&amp;gt; Ip address of connecting client &lt;/span&gt;&lt;span class="si"&gt;{0}&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;theIp&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+    &lt;span class="n"&gt;dockershell&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dispatcher&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;startDocker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;theuser&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;theIp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now if we call the script using the $USER and $SSH_CLIENT system
+variables, we get a new session for each user who connects.
+I created a helper script for this.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;$cat dockershell.sh&lt;/span&gt;
+&lt;span class="err"&gt;#!/bin/sh&lt;/span&gt;
+&lt;span class="err"&gt;python dockershell.py $USER $SSH_CLIENT&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Wiring it up as a users shell&lt;/h3&gt;
+&lt;p&gt;Now, rather than have a custom shell for each user we can just assign
+the dockershell to each of them, and let the system variables set by
+SSH on login deal with everything.&lt;/p&gt;
+&lt;p&gt;Add the dockershell.sh script to /etc/shells&lt;/p&gt;
+&lt;p&gt;Then just create a user for each container, with the dispatcher as their shell.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="err"&gt;useradd -M -G docker -s /opt/dockershells/dispatcher.sh &amp;lt;whoever&amp;gt;&lt;/span&gt;
+&lt;span class="err"&gt;passwd &amp;lt;whoever&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Persistent Images&lt;/h2&gt;
+&lt;p&gt;One issue with the approach above, is that there is a 1:1 mapping
+between SSH sessions and containers.  Therefore if we start two SSH
+sessions from the same machine, each ends up in its own "fresh"
+instance.  This can make some approaches difficult, as you may want a
+second SSH channel to monitor processes while you make changes, or you
+save changes that take effect on login.&lt;/p&gt;
+&lt;p&gt;To work around this I have a "persistant" flag for each image in the
+database. If this is set we store the IP address of the connecting
+machine, and the docker generated name of the container that is
+created.  (For example 127.0.0.1 , "amazing_hopper") We then start the
+container without the &lt;em&gt;auto_remove&lt;/em&gt; flag set.  When the user connects
+we can check if the container exists, and reconnect to it.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;persistant&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Persistant Container&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;autoremove&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;False&lt;/span&gt;
+
+    &lt;span class="c1"&gt;#Fetch from database#&lt;/span&gt;
+    &lt;span class="n"&gt;details&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getPersist&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="n"&gt;ipadd&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;details&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="c1"&gt;#Update the Last Access Time&lt;/span&gt;
+        &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;storePersist&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ipadd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;details&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;containerName&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+        &lt;span class="c1"&gt;#And Connect&lt;/span&gt;
+        &lt;span class="n"&gt;dockerpty&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;details&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;containerName&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="c1"&gt;#Exit the function&lt;/span&gt;
+
+&lt;span class="c1"&gt;#Otherwise Create the container in the way we did above.&lt;/span&gt;
+&lt;span class="n"&gt;container&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;containers&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="n"&gt;image&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;user&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;user&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;working_dir&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;workdir&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;command&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;thecommand&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;auto_remove&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;autoremove&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="c1"&gt;#Override the setting&lt;/span&gt;
+        &lt;span class="n"&gt;tty&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;stdin_open&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;
+        &lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;#Store in the database&lt;/span&gt;
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;persistant&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;driver&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;storePersist&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;thecontainer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;image&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ipadd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;container&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="n"&gt;log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;debug&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;Spawning Termnal&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;dockerpty&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;api&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;container&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;Evaluation&lt;/h1&gt;
+&lt;p&gt;So far I have tested the concept, and everything appears to work nicely.&lt;/p&gt;
+&lt;p&gt;The next stage is to see how well it copes under load.
+Currently have 100 Sessions connected to the server in the hacking lab, trying to simulate student activity, with a range of tasks:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Idling:  (Proper simulation of a student)&lt;/li&gt;
+&lt;li&gt;Top:  (Gives me some network traffic)&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;finding&lt;/em&gt; SUID files, every 5 seconds.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;System load is around 10%, will see if it holds together over the weekend.&lt;/p&gt;
+&lt;h2&gt;Share and Enjoy!&lt;/h2&gt;
+&lt;p&gt;You can find the repository at.  https://github.coventry.ac.uk/aa9863/dockershells/&lt;/p&gt;
+&lt;p&gt;Comments and feedback welcome.&lt;/p&gt;</content><category term="teaching"></category><category term="Teaching"></category><category term="CUEH"></category><category term="Hacking"></category><category term="Docker"></category></entry><entry><title>Docker for teaching EH</title><link href="https://dan.quixote.codes/docker-for-teaching-eh.html" rel="alternate"></link><published>2019-06-25T13:27:19+01:00</published><updated>2019-06-25T13:27:19+01:00</updated><author><name>DanG</name></author><id>tag:dan.quixote.codes,2019-06-25:/docker-for-teaching-eh.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;Thoughts on using docker for teaching PenTesting, and an introduction to a Linux Trainer&lt;/p&gt;
+&lt;/blockquote&gt;</summary><content type="html">&lt;p&gt;Those who know me know I like docker, its simplified teaching a lot of
+the hacking examples to the students.  Yes it has some flaws (networking) or
+requires some gnarly workarounds for things, but its a major feature
+of my material now.&lt;/p&gt;
+&lt;h2&gt;Example:  The Linux trainer&lt;/h2&gt;
+&lt;p&gt;"Inspired" by the work of Under The Wire's bandit.  I built a docker
+based Linux trainer.  This is intended to give the students a way to
+practice the basic commands (they should already know). &lt;/p&gt;
+&lt;p&gt;The &lt;a href="https://dan.quixote.codes/cli-basics-wargame.html"&gt;Linux trainer&lt;/a&gt; Its relatively standard wargame stuff. SSH into each level, complete a
+task and get the creds for the next. &lt;/p&gt;
+&lt;p&gt;Nice thing here is it weighs in at a mighty 190MB.  Compare that to
+the overhead of setting up a VM to host it.&lt;/p&gt;
+&lt;p&gt;Feedback on the whole has been positive, few gumble about having to
+use docker itself. (IE typing &lt;code&gt;docker run cueh/nixtrainer&lt;/code&gt; can be
+hard) but this was mostly around getting the tools setup.&lt;/p&gt;
+&lt;h1&gt;The Good, the Bad and the Ugly.&lt;/h1&gt;
+&lt;h2&gt;Benefits&lt;/h2&gt;
+&lt;p&gt;The main benefits from my point of view are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Image size, most of my stuff is built from the same "Base"
+    containers, this means that after the first image download, the
+    base image remains unchanged and all that the students need to
+    download is the content.  For Example: My Base Debian CTF
+    container is around 120MB, after downloading that, its only 5-10MB
+    of data that needs to be grabbed for each challenge.  Compare that
+    to around 1GB for a basic Debian VM.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Persistence: (Or the lack of it), containers store whatever
+    changes happen in a thin layer on-top of the image.  This is
+    really cool, as when the students invariably screw something up,
+    they just kill and restart the container.  Everything is reset
+    back to "factory defaults".  Compare this to a VM where we have to
+    either have "snapshots", or some other way of resetting.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Speed. On the whole starting containers is &lt;strong&gt;FAST&lt;/strong&gt;, a few seconds
+    for something simple using SSH.  Yes things like databases take
+    some time to initialise, but that's the Database itself, rather
+    than docker.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Getting &lt;strong&gt;Root&lt;/strong&gt;. We all know there is nothing like the feeling of
+    getting root. This is not so much a benefit of docker itself, but
+    I am a bit leaary of giving students root on a VM, especially when
+    there are a set of challenges.  With containers, I tend to break
+    each challenge into a container, and let them get root, meh Its
+    only another 10 Meg for the next challenge.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;"Platform Independence", the containers can be run on various OS,
+    docker for windows does a pretty good job (although I find it
+    tends to break my exposed ports), Meaning regardless of the base OS,
+    the students still get the benefit.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;So-So&lt;/h2&gt;
+&lt;p&gt;Things that can be both good and bad depending on the situation.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Simplicity: This is a bit of a double edged sword, but default the
+   images I use come stripped down.  It means that there are few
+   distractions for the proof of concept. For example, if we are doing
+   anything with cron, cron will be present, otherwise it wont exist.
+   This is nice as it lets students focus on the task, but lacks
+   realism.  It also makes it a PITA to make more complex systems.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The One Process per container Philosophy.  I understand why this is
+   a decision, and for the whole agree with it.  However, at times,
+   its a pain to have to plumb stuff together just to allows an Apache
+   Server with SSH.  Especially the hoops I have to jump through with
+   volumes and sharing data.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;The Bad&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Networking, Want to simulate a network of machines?  Welcome to a
+   world of pain.  Problem here is its out of context for what docker
+   is designed to do, but it would be lovely.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Doing anything complex requires magic.  Overflows, GDB anything
+   that requires complex privileges, can be a right pain to setup.
+   Much easier to have a VM for this.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Container Security.  Forget breakouts, there is a more fundamental
+   problem here, If the student can run the container at home its as
+   simple as using &lt;code&gt;docker exec &amp;lt;words&amp;gt;&lt;/code&gt; to get a root
+   shell. Perhaps I am nieve, I trust people not to do this, but.....&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content><category term="teaching"></category><category term="Teaching"></category><category term="CUEH"></category><category term="Hacking"></category><category term="Docker"></category></entry><entry><title>CLI basics wargame</title><link href="https://dan.quixote.codes/cli-basics-wargame.html" rel="alternate"></link><published>2019-02-14T17:20:41+00:00</published><updated>2019-02-14T17:20:41+00:00</updated><author><name>DanG</name></author><id>tag:dan.quixote.codes,2019-02-14:/cli-basics-wargame.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;Learning through doing.  A "wargame" to build basic Linux Skills&lt;/p&gt;
+&lt;/blockquote&gt;</summary><content type="html">&lt;p&gt;One of the more "fun" parts of my job is working out how to get the
+students engaged with the material.  A common way of doing this in the
+Cyber Sec community is the "Wargame" or "CTF" (Capture the flag).&lt;/p&gt;
+&lt;p&gt;Inspired by things like Bandit at &lt;a href="http://overthewire.org"&gt;overthewire.org&lt;/a&gt; I have put
+together a Linux trainer for my classes.&lt;/p&gt;
+&lt;p&gt;The docker version is available on &lt;a href="https://hub.docker.com/r/cueh/nixtrainer"&gt;docker hub @cueh/nixtrainer&lt;/a&gt;
+have a look an tell me what you think.&lt;/p&gt;
+&lt;h1&gt;The Problem&lt;/h1&gt;
+&lt;p&gt;For the Ethical hacking module there is a certain subset of command
+line-fu that we need.  Previously, I had done a limited "Chalk and
+Talk" approach, talking about the key items, before unleashing the
+students on a VM with several challenges to test their skills.&lt;/p&gt;
+&lt;p&gt;While this is a world away from the "Chalk and Talk" approach, it
+still wasn't working as well as I would like.  Students tended to zone
+out during the talk on the commands (and to be honest i cant blame
+them, a set of slides on less isn't the most inspiring thing), so the
+practical could be difficult without them revisiting the lecture.&lt;/p&gt;
+&lt;p&gt;Watching the students, it was clear that they would flick back and
+forth through the material to find the bit of information they needed
+to solve the problem, rather than actually applying the concepts
+taught to solve the problem.&lt;/p&gt;
+&lt;h1&gt;A solution?&lt;/h1&gt;
+&lt;p&gt;Given that war games and CTF are popular ways of honing skills, and
+inspired by the excellent Bandit wargame from &lt;overthewire.org&gt; I have
+put together a basic Linux trainer that teaches some of the core
+skills that the students will need to complete the course.&lt;/p&gt;
+&lt;p&gt;Its the standard wargame concept, there are various levels, you start
+at level0 and as you complete each challenge you get the password for
+the next level.   The game covers concepts including:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Where am I and how do I get elsewhere (ls, cd, and paths)&lt;/li&gt;
+&lt;li&gt;Access control and Permissions&lt;/li&gt;
+&lt;li&gt;Finding things on the system (Find, locate)&lt;/li&gt;
+&lt;li&gt;Finding things in files (grep)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Driven by Manpages&lt;/h2&gt;
+&lt;p&gt;One issue I have tried to solve is the "Can I google that for
+you?" problem.  While it is my job to introduce people to the tools,
+and discuss the technical topics..  Being able to think around a
+problem is a core skill.  I hope none of my students end up just
+pressing &lt;em&gt;the nessus button(tm)&lt;/em&gt;, then pressing win on metasploit.
+Being able to think about the problems you face is a key skill, and
+being able to RTFM is part of the solution.&lt;/p&gt;
+&lt;p&gt;To address this, all the documentation for the challenges is in man
+pages, hopefully the processes of using the built in help files will
+stick.&lt;/p&gt;
+&lt;h2&gt;Docker to the rescue!&lt;/h2&gt;
+&lt;p&gt;Another, issue that comes up with creating material is it tends to be
+&lt;em&gt;heavyweight&lt;/em&gt;, putting together a full VM for this is pretty hardcore,
+around 3GB for &amp;lt; 20M of data.  The other issue is reverting any of the
+tasks when the students inevitably &lt;code&gt;rm -rf&lt;/code&gt; something.&lt;/p&gt;
+&lt;p&gt;Docker turns out to be a great solution for this kind of standalone
+thing, as we end up with an "image" of a couple of hundred meg, that
+can be reset with a simple &lt;code&gt;docker rm &amp;lt;whatever&amp;gt;&lt;/code&gt; Even better, if
+we reuse the base image we end up only downloading the diff between
+the versions, so I can put together various web based challenges for
+the same infrastructure for the $\sqrt(fa)$ disk space.&lt;/p&gt;
+&lt;p&gt;I plan on discussing docker for teaching in a future post.&lt;/p&gt;
+&lt;h1&gt;Reflections&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Overall the students seem to have enjoyed it, but its too early
+    to tell if it has made a difference.&lt;/li&gt;
+&lt;li&gt;Not sure on the balance of leading people through it, VS discover
+    for yourself.  It seems that there is still a bit of a learning
+    curve some struggle to get over. To be honest, its trivial stuff,
+    so perhaps its more a problem with motivation, rather than the
+    content.&lt;/li&gt;
+&lt;/ul&gt;</content><category term="teaching"></category><category term="Teaching"></category><category term="Linux"></category><category term="CUEH"></category><category term="Docker"></category></entry></feed>

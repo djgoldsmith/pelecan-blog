@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - Arch Setup</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="Linux" />
+    <meta name="tags" content="Arch" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/drafts/arch-setup.html" rel="bookmark"
+         title="Permalink to Arch Setup">Arch Setup</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2018-01-10T16:27:09+00:00">
+      Wed 10 January 2018
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/drafts.html">drafts</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/linux.html">Linux</a>
+            <i class="bi bi-tag"></i><a href="/tag/arch.html">Arch</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <h1>Notes on Arch Linux Setup</h1>
+<p>Setup of Arch Linux system for the CUEH course.
+This is done in VMware</p>
+<h2>SEtup</h2>
+<p>New Image,
+Linux 4.X kernel</p>
+<h2>Initial Install</h2>
+<p>SEtup keyboard</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># loadkeys uk</span>
+</code></pre></div>
+
+<p>Time to use NTP</p>
+<div class="highlight"><pre><span></span><code># timedatectl set-ntp true
+# timedatectl status
+</code></pre></div>
+
+<h2>Disk Partitioning</h2>
+<p>We are going to be stuck with MBR mode (although a 2TB disk wouldnt be appropriate for this image anyway)
+We do have some options here, and could seperate out /home etc. </p>
+<ul>
+<li>200M bootable partition</li>
+<li>Rest for data partition</li>
+</ul>
+<p>Work out the partition we need to change</p>
+<div class="highlight"><pre><span></span><code>fdisk -l
+</code></pre></div>
+
+<p>Make use of the Snazzy graphical partition manager.</p>
+<div class="highlight"><pre><span></span><code>cfdisk /dev/sda
+</code></pre></div>
+
+<p>Create the boot partition</p>
+<ul>
+<li>type DOS</li>
+<li>size 200M</li>
+<li>Bootable</li>
+</ul>
+<p>Then the Other</p>
+<ul>
+<li>Size <whatever></li>
+</ul>
+<p>Finalise by selecting write then quit.</p>
+<p>Format to ext4</p>
+<div class="highlight"><pre><span></span><code>mkfs.ext4 /dev/sda1
+mkfs.ext4 /dev/sda2
+</code></pre></div>
+
+<p>And Mount</p>
+<div class="highlight"><pre><span></span><code>mount /dev/sda2/ /mnt
+mkdir /mnt/boot
+mount /dev/sda1/ /mnt/boot
+</code></pre></div>
+
+<h2>Install Base Packages</h2>
+<p>NOTE: We may want to fuck about with mirrors here</p>
+<p>Install the base packages</p>
+<div class="highlight"><pre><span></span><code>pacstrap /mnt base
+</code></pre></div>
+
+<p>Generate the Fstab </p>
+<p>~~
+genfstab -U /mnt &gt;&gt; /etc/etc/fstab</p>
+<h2>Chroot and start installing things</h2>
+<div class="highlight"><pre><span></span><code>arch-chroot /mnt
+</code></pre></div>
+
+<h3>Localization</h3>
+<p>Normally the time is UTC (/etc/localtime)
+We can change this to UK time</p>
+<div class="highlight"><pre><span></span><code># ln -sf /usr/share/zoneinfo/Europe/London /etc/localtime
+</code></pre></div>
+
+<p>Change the Language</p>
+<p>Edit /etc/locale.gen</p>
+<p>Uncomment en_GB.UTF-8  (Ctrl-w in nano)</p>
+<p>And run the command to generate</p>
+<div class="highlight"><pre><span></span><code>#locale-gen
+...
+#echo LANG=en_GB.UTF-8 &gt; /etc/locale.conf
+</code></pre></div>
+
+<p>Also hardcode the keyboard</p>
+<div class="highlight"><pre><span></span><code>echo KEYMAP=uk &gt;&gt; /etc/vconsole.conf
+</code></pre></div>
+
+<h3>Networking</h3>
+<div class="highlight"><pre><span></span><code>echo &quot;marblearch&quot; &gt;&gt; /etc/hostname
+</code></pre></div>
+
+<p>And the /etc/hosts file</p>
+<div class="highlight"><pre><span></span><code><span class="mf">127.0.0.1</span>   <span class="n">localhost</span>
+<span class="p">::</span><span class="mf">1</span>     <span class="n">localhost</span>
+<span class="mf">127.0.1.1</span>   <span class="n">MarbleArch</span>
+</code></pre></div>
+
+<h3>Users</h3>
+<p>Set root password</p>
+<div class="highlight"><pre><span></span><code>passwd
+</code></pre></div>
+
+<p>Create "Standard" user</p>
+<div class="highlight"><pre><span></span><code>useradd -m -G wheel,users -s /bin/bash user
+passwd user
+</code></pre></div>
+
+<p>Add to Sudoers</p>
+<div class="highlight"><pre><span></span><code>pacman -S Sudo
+</code></pre></div>
+
+<p>Edit /etc/sudoers  Under User Privilege specification</p>
+<h2>Install Bootloaders</h2>
+<div class="highlight"><pre><span></span><code>pacman -S grub os-prober
+</code></pre></div>
+
+<p>And install (Check the drive)</p>
+<div class="highlight"><pre><span></span><code>grub-install --recheck --target=i386-pc /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
+</code></pre></div>
+
+<h2>Restart</h2>
+<p>Exit chroot</p>
+<div class="highlight"><pre><span></span><code><span class="k">exit</span>
+</code></pre></div>
+
+<p>unmount </p>
+<div class="highlight"><pre><span></span><code>umount -R /mnt
+</code></pre></div>
+
+<p>Remove USB in Options</p>
+<p>Resart</p>
+<div class="highlight"><pre><span></span><code>reboot
+</code></pre></div>
+
+<h1>Notes for Med</h1>
+<p>http://grbd.github.io/posts/2016/11/06/using-the-mbed-cli/</p>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

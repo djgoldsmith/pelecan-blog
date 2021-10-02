@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - An update on the XSS Trainer</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="Teaching" />
+    <meta name="tags" content="CUEH" />
+    <meta name="tags" content="Hacking" />
+    <meta name="tags" content="XSS" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/an-update-on-the-xss-trainer.html" rel="bookmark"
+         title="Permalink to An update on the XSS Trainer">An update on the XSS Trainer</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2019-05-17T21:26:44+01:00">
+      Fri 17 May 2019
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/ctf.html">ctf</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/teaching.html">Teaching</a>
+            <i class="bi bi-tag"></i><a href="/tag/cueh.html">CUEH</a>
+            <i class="bi bi-tag"></i><a href="/tag/hacking.html">Hacking</a>
+            <i class="bi bi-tag"></i><a href="/tag/xss.html">XSS</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <p>A Quick follow up on the <a href="/detecting-js-alerts-in-wargames.html">XSS trainer post</a></p>
+<p>So what would Scooby Doo?  Well if its Greg, come up with an
+interesting workaround.</p>
+<p>Sot the client side detection for Alerts in the console worked OK
+(except on Edge).  However, it turns out that we you could still work
+around this in debug mode.  Simply open up the console and inject an
+new image tag with <em>on error</em> triggering an alert.</p>
+<p>I suppose the learning point here is to live by my own rules, Client
+side verification may seem like it works, bu its <strong>never</strong> a good idea
+to rely solely on something the client controls.</p>
+<p>Fortunately, the worst that could happen from this is a good student
+spent more effort getting some flags they would have got anyway.</p>
+<p>Anyway, long story short, added some server side verification,
+checking for expected input, this time it should be good, but who
+knows.</p>
+<h2>Docker Image.</h2>
+<p>Put together a quick and dirty docker image for people to try, </p>
+<p><a href="https://cloud.docker.com/u/cueh/repository/docker/cueh/ctf-xss-alert">https://cloud.docker.com/u/cueh/repository/docker/cueh/ctf-xss-alert</a></p>
+<p>you can give it a go with</p>
+<div class="highlight"><pre><span></span><code>$docker run cueh/ctf-xss-alert
+</code></pre></div>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

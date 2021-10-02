@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - Building Papers using Pandoc and Github Actions</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="Teaching" />
+    <meta name="tags" content="Github" />
+    <meta name="tags" content="Pandoc" />
+    <meta name="tags" content="Docker" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/building-papers-using-pandoc-and-github-actions.html" rel="bookmark"
+         title="Permalink to Building Papers using Pandoc and Github Actions">Building Papers using Pandoc and Github Actions</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2020-06-24T22:10:37+01:00">
+      Wed 24 June 2020
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/notes.html">notes</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/teaching.html">Teaching</a>
+            <i class="bi bi-tag"></i><a href="/tag/github.html">Github</a>
+            <i class="bi bi-tag"></i><a href="/tag/pandoc.html">Pandoc</a>
+            <i class="bi bi-tag"></i><a href="/tag/docker.html">Docker</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <h2>Getting Github Actions to Work</h2>
+<p>As always, there was a lot of trial and error (and a bit of Cargo-Cult
+programming) while I worked out what was happening.</p>
+<p>A lot of this stems from how Git deals with the data in your repo.  I
+had assumed that actions would have access to the files in your repo,
+but this is not the case.  Instead it appears that each build runs on
+a "clean" install.  So we need to make sure it has the data available
+by cloning the repo.  This (eventually) makes sense, as it follows a
+standard Git workflow. The same goes for writing data back, we can
+opeate on files, but they dont get added back to the repository, so we
+need to commit and push them back</p>
+<blockquote>
+<p>Additional Note: There was also the added fun of getting the correct
+dependencies into the Docker Image.  I need the python-filters
+extension.  So had to build a custom version of pandoc/latex
+containing this and host it on dockerhub.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># Trying Workflows and Actions</span>
+<span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Compile with Pandoc</span>
+
+<span class="nt">on</span><span class="p">:</span>
+  <span class="nt">pull_request</span><span class="p">:</span>
+    <span class="nt">types</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">closed</span><span class="p p-Indicator">]</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+  <span class="nt">convert_via_pandoc</span><span class="p">:</span>
+    <span class="nt">runs-on</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ubuntu-18.04</span>
+    <span class="nt">steps</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Checkout repository</span>
+        <span class="nt">uses</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span>
+        <span class="nt">with</span><span class="p">:</span>
+          <span class="nt">persist-credentials</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span> <span class="c1"># otherwise, the token used is the GITHUB_TOKEN, instead of your personal token</span>
+          <span class="nt">fetch-depth</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span> <span class="c1"># otherwise, you will failed to push refs to dest repo</span>
+      <span class="p p-Indicator">-</span> <span class="nt">run</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mkdir output</span>
+      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Build Documents</span>
+        <span class="nt">uses</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">docker://dang42/pandoc-ieee</span>
+        <span class="nt">with</span><span class="p">:</span>
+          <span class="nt">args</span><span class="p">:</span> <span class="s">&quot;--filter=pandoc-citeproc</span><span class="nv"> </span><span class="s">--filter=templates/tablefilter.py</span><span class="nv"> </span><span class="s">--template</span><span class="nv"> </span><span class="s">templates/ieee.latex</span><span class="nv"> </span><span class="s">-o</span><span class="nv"> </span><span class="s">output/output.pdf</span><span class="nv"> </span><span class="s">ExamplePaper.md&quot;</span>
+      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Commit Files</span> <span class="c1">#Save the files</span>
+        <span class="nt">run</span><span class="p">:</span> <span class="p p-Indicator">|</span>
+          <span class="no">git config --local user.name &quot;djgoldsmith&quot;</span>
+          <span class="no">git add ./output</span>
+          <span class="no">git commit -m &quot;Commit Built paper&quot;</span>
+      <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Push Changes</span>
+        <span class="nt">uses</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ad-m/github-push-action@master</span>
+        <span class="nt">with</span><span class="p">:</span>
+          <span class="nt">github_token</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
+</code></pre></div>
+
+<h2>Future Work</h2>
+<p>There are a few things I need to polish. In an approximate order.</p>
+<ol>
+<li>
+<p>Like any open source project, the documentation is currently
+    terrible.  Now I know how things work, I will get that resolved
+    ASAP.</p>
+</li>
+<li>
+<p>Give something back, and add my examples to the Official documentation.</p>
+</li>
+<li>
+<p>Move the dissertaion template across so it works with this process</p>
+</li>
+<li>
+<p>Literate programming.</p>
+</li>
+</ol>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

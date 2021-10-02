@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - Moving from master to main in Git</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="git" />
+    <meta name="tags" content="cli" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/moving-from-master-to-main-in-git.html" rel="bookmark"
+         title="Permalink to Moving from master to main in Git">Moving from master to main in Git</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2020-12-18T12:00:00+00:00">
+      Fri 18 December 2020
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/notes-and-cheatsheets.html">Notes and Cheatsheets</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/git.html">git</a>
+            <i class="bi bi-tag"></i><a href="/tag/cli.html">cli</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <p>For a while now been using <strong>Main</strong> rather than <strong>Master</strong> when it comes to my
+Git repos. </p>
+<p>Its a trivial thing to do, and while its still a bit weird (10+ years
+of git muscle memory) to use, if it stops one person feeling
+uncomfortable then its worth it<sup id="fnref:muscle-excuse"><a class="footnote-ref" href="#fn:muscle-excuse">1</a></sup>.</p>
+<h2>Introduction</h2>
+<p>There has been lots of discussion around some of the terminology in
+Computer Science.  With some of the words we have used to describe
+things may or may not be suitable for the modern world.</p>
+<p>While (personally) I think some of it is an over-reaction. Just having
+the word Black in something doesn't automatically make it racist.  I
+am 99% sure that there was never any offence intended when first
+created. </p>
+<p>However, If it might cause offence, and its easy for me to change a
+small bit of behaviour, why not.  Being reasonable, and dealing with
+others points of view is what makes civilisation work<sup id="fnref:not-an-excuse"><a class="footnote-ref" href="#fn:not-an-excuse">2</a></sup>.</p>
+<p>Language is constantly evolving, so kicking up a fuss about you not
+being able to call something master "Because we always have", when it
+has no real impact on life, and is trivial to implement seems unreasonable.</p>
+<p>The <a href="https://www.ncsc.gov.uk/blog-post/terminology-its-not-black-and-white">NCSC</a> 
+have a great blog post on a the whole "whitelist", "blacklist" issue.</p>
+<h1>Commands for changing Repo preferences</h1>
+<h2>Using Main by Default on the Git Command line</h2>
+<p>A trivial change we can make via the global git configuration</p>
+<div class="highlight"><pre><span></span><code>$ git config --global init.defaultBranch main
+</code></pre></div>
+
+<h2>Modifying existing repo's to use main</h2>
+<p>If we have older repositories they may use the old master by default.
+To change this to main by <em>moving</em> the branch.  This should retain all the history</p>
+<div class="highlight"><pre><span></span><code>$ git branch -m master main
+</code></pre></div>
+
+<p>Then push with </p>
+<div class="highlight"><pre><span></span><code>$ git push -u origin main
+</code></pre></div>
+
+<h2>GitHub and GitHub enterprise</h2>
+<p>Our last change is to the central repository.</p>
+<p>By default full fat GitHub now uses main by default for all new repositories.</p>
+<p>However, our Enterprise doesn't yet and defaults to master. We may
+also want to update older repo's, to use the new naming scheme.</p>
+<p>We can do this under </p>
+<ul>
+<li>Settings<ul>
+<li>Branches</li>
+<li>Change Default Branch</li>
+</ul>
+</li>
+</ul>
+<p><img alt="Git Options" src="/images/GitMain.png"></p>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn:muscle-excuse">
+<p>Muscle memory isn't an excuse either.  If your old enough to be really attached to master, your probably old enough to have converted through the CVS / Subversion / Git chain,  you managed to cope then, so I am sure you can deal with it now.&#160;<a class="footnote-backref" href="#fnref:muscle-excuse" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:not-an-excuse">
+<p>However, this is not an justification for a general "It offends me, so you cant use it" approach.  This seems to come up a counter argument against this sort of stuff (usually by the sort of people who take great delight in moaning about this sort of thing, while calling everyone else snowflake).  Yes calling something a <strong>main</strong> rather than <strong>master</strong> might offend you, but why?  Does it beat, "I feel uncomfortable using words that could be linked to some pretty nasty parts of history".&#160;<a class="footnote-backref" href="#fnref:not-an-excuse" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

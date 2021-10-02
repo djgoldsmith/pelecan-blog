@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - CLI basics wargame</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="Teaching" />
+    <meta name="tags" content="Linux" />
+    <meta name="tags" content="CUEH" />
+    <meta name="tags" content="Docker" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/cli-basics-wargame.html" rel="bookmark"
+         title="Permalink to CLI basics wargame">CLI basics wargame</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2019-02-14T17:20:41+00:00">
+      Thu 14 February 2019
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/teaching.html">teaching</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/teaching.html">Teaching</a>
+            <i class="bi bi-tag"></i><a href="/tag/linux.html">Linux</a>
+            <i class="bi bi-tag"></i><a href="/tag/cueh.html">CUEH</a>
+            <i class="bi bi-tag"></i><a href="/tag/docker.html">Docker</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <p>One of the more "fun" parts of my job is working out how to get the
+students engaged with the material.  A common way of doing this in the
+Cyber Sec community is the "Wargame" or "CTF" (Capture the flag).</p>
+<p>Inspired by things like Bandit at <a href="http://overthewire.org">overthewire.org</a> I have put
+together a Linux trainer for my classes.</p>
+<p>The docker version is available on <a href="https://hub.docker.com/r/cueh/nixtrainer">docker hub @cueh/nixtrainer</a>
+have a look an tell me what you think.</p>
+<h1>The Problem</h1>
+<p>For the Ethical hacking module there is a certain subset of command
+line-fu that we need.  Previously, I had done a limited "Chalk and
+Talk" approach, talking about the key items, before unleashing the
+students on a VM with several challenges to test their skills.</p>
+<p>While this is a world away from the "Chalk and Talk" approach, it
+still wasn't working as well as I would like.  Students tended to zone
+out during the talk on the commands (and to be honest i cant blame
+them, a set of slides on less isn't the most inspiring thing), so the
+practical could be difficult without them revisiting the lecture.</p>
+<p>Watching the students, it was clear that they would flick back and
+forth through the material to find the bit of information they needed
+to solve the problem, rather than actually applying the concepts
+taught to solve the problem.</p>
+<h1>A solution?</h1>
+<p>Given that war games and CTF are popular ways of honing skills, and
+inspired by the excellent Bandit wargame from <overthewire.org> I have
+put together a basic Linux trainer that teaches some of the core
+skills that the students will need to complete the course.</p>
+<p>Its the standard wargame concept, there are various levels, you start
+at level0 and as you complete each challenge you get the password for
+the next level.   The game covers concepts including:</p>
+<ul>
+<li>Where am I and how do I get elsewhere (ls, cd, and paths)</li>
+<li>Access control and Permissions</li>
+<li>Finding things on the system (Find, locate)</li>
+<li>Finding things in files (grep)</li>
+</ul>
+<h2>Driven by Manpages</h2>
+<p>One issue I have tried to solve is the "Can I google that for
+you?" problem.  While it is my job to introduce people to the tools,
+and discuss the technical topics..  Being able to think around a
+problem is a core skill.  I hope none of my students end up just
+pressing <em>the nessus button(tm)</em>, then pressing win on metasploit.
+Being able to think about the problems you face is a key skill, and
+being able to RTFM is part of the solution.</p>
+<p>To address this, all the documentation for the challenges is in man
+pages, hopefully the processes of using the built in help files will
+stick.</p>
+<h2>Docker to the rescue!</h2>
+<p>Another, issue that comes up with creating material is it tends to be
+<em>heavyweight</em>, putting together a full VM for this is pretty hardcore,
+around 3GB for &lt; 20M of data.  The other issue is reverting any of the
+tasks when the students inevitably <code>rm -rf</code> something.</p>
+<p>Docker turns out to be a great solution for this kind of standalone
+thing, as we end up with an "image" of a couple of hundred meg, that
+can be reset with a simple <code>docker rm &lt;whatever&gt;</code> Even better, if
+we reuse the base image we end up only downloading the diff between
+the versions, so I can put together various web based challenges for
+the same infrastructure for the $\sqrt(fa)$ disk space.</p>
+<p>I plan on discussing docker for teaching in a future post.</p>
+<h1>Reflections</h1>
+<ul>
+<li>Overall the students seem to have enjoyed it, but its too early
+    to tell if it has made a difference.</li>
+<li>Not sure on the balance of leading people through it, VS discover
+    for yourself.  It seems that there is still a bit of a learning
+    curve some struggle to get over. To be honest, its trivial stuff,
+    so perhaps its more a problem with motivation, rather than the
+    content.</li>
+</ul>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

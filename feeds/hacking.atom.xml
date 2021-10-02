@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Dan Quixote Codes - hacking</title><link href="https://dan.quixote.codes/" rel="alternate"></link><link href="https://dan.quixote.codes/feeds/hacking.atom.xml" rel="self"></link><id>https://dan.quixote.codes/</id><updated>2019-03-19T19:28:56+00:00</updated><subtitle>Adventures in Teaching, Programming, and Cyber Security.</subtitle><entry><title>SUID Shenanigans</title><link href="https://dan.quixote.codes/suid-shenanigans.html" rel="alternate"></link><published>2019-03-19T19:28:56+00:00</published><updated>2019-03-19T19:28:56+00:00</updated><author><name>DanG</name></author><id>tag:dan.quixote.codes,2019-03-19:/suid-shenanigans.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;Spotted some interesting new behaviour with the SUID bit in Linux&lt;/p&gt;
+&lt;/blockquote&gt;</summary><content type="html">&lt;p&gt;While prepping for the overflow lecture noticed some new behaviour with
+SUID, Haven't been able to find any changes in the Kernel log, so
+thought I would play to work out the behaviour&lt;/p&gt;
+&lt;h1&gt;Path Poisoning Weirdness&lt;/h1&gt;
+&lt;h2&gt;Old Behaviour&lt;/h2&gt;
+&lt;p&gt;In the Linux Trainer, the following code was used in a path poisoning example.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+
+&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+  &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Attempting to access file:&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="n"&gt;system&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;cat /home/level18/File.txt&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once installed, SUID permissions were set&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;level18@f0432d98b859:~$ ls -l
+total &lt;span class="m"&gt;32&lt;/span&gt;
+-r-------- &lt;span class="m"&gt;1&lt;/span&gt; elev18  elev18     &lt;span class="m"&gt;36&lt;/span&gt; Feb &lt;span class="m"&gt;11&lt;/span&gt; &lt;span class="m"&gt;10&lt;/span&gt;:00 File.txt
+-r-------- &lt;span class="m"&gt;1&lt;/span&gt; elev18  elev18     &lt;span class="m"&gt;64&lt;/span&gt; Feb &lt;span class="m"&gt;11&lt;/span&gt; &lt;span class="m"&gt;10&lt;/span&gt;:00 Pass.txt
+---s--x--x &lt;span class="m"&gt;1&lt;/span&gt; elev18  level18 &lt;span class="m"&gt;16624&lt;/span&gt; Feb &lt;span class="m"&gt;11&lt;/span&gt; &lt;span class="m"&gt;10&lt;/span&gt;:00 runme
+-rwxr--r-- &lt;span class="m"&gt;1&lt;/span&gt; level18 level18   &lt;span class="m"&gt;141&lt;/span&gt; Feb &lt;span class="m"&gt;11&lt;/span&gt; &lt;span class="m"&gt;10&lt;/span&gt;:00 source.c
+level18@f0432d98b859:~$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We could do the Classic Path poison attack and elevate the permissions&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;level18@f0432d98b859:~$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/bin/sh&amp;quot;&lt;/span&gt; &amp;gt; cat
+level18@f0432d98b859:~$ chmod +x cat
+level18@f0432d98b859:~$ &lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;.:&lt;span class="nv"&gt;$PATH&lt;/span&gt; ./runme 
+Attempting to access file:
+$ whoami
+elev18
+$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Recreating on my Arch System&lt;/h2&gt;
+&lt;p&gt;So take the same code, compile and set the permissions&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop ~/Coding/Testing$ ls -l
+-rwsr-sr-x &lt;span class="m"&gt;1&lt;/span&gt; root dang &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:40 a.out
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;141&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:40 Testcode.c
+dang@dang-laptop ~/Coding/Testing$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;And try to recreate the exploit&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop ~/Coding/Testing$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/bin/sh&amp;quot;&lt;/span&gt; &amp;gt; cat
+dang@dang-laptop ~/Coding/Testing$ chmod +x cat
+dang@dang-laptop ~/Coding/Testing$ &lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;.:&lt;span class="nv"&gt;$PATH&lt;/span&gt; ./a.out
+Attempting to access file:
+sh-5.0$ whoami
+dang
+sh-5.0$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;So it looks like we get different behaviour between the installs, SUID
+doesn't elevate permissions on the more modern system.&lt;/p&gt;
+&lt;h1&gt;Digging a Bit Deeper.&lt;/h1&gt;
+&lt;h2&gt;Setting SUID on the file system&lt;/h2&gt;
+&lt;p&gt;To avoid the confusion with the path poisoning, lets work on a simpler version of the file.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+
+&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+  &lt;span class="n"&gt;system&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/bin/sh&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Set SUID bit in the file systems, and when we run this we still don't
+get a root shell??&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop ~/Coding/Testing$ ls -l
+-rwsr-sr-x &lt;span class="m"&gt;1&lt;/span&gt; root dang &lt;span class="m"&gt;16576&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:49 a.out
+-rwxr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; dang dang     &lt;span class="m"&gt;8&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:41 cat
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang    &lt;span class="m"&gt;80&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:48 Testcode.c
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;141&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:40 Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                                                          
+sh-5.0$ id
+&lt;span class="nv"&gt;uid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;gid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;groups&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt;,977&lt;span class="o"&gt;(&lt;/span&gt;docker&lt;span class="o"&gt;)&lt;/span&gt;,987&lt;span class="o"&gt;(&lt;/span&gt;uucp&lt;span class="o"&gt;)&lt;/span&gt;,998&lt;span class="o"&gt;(&lt;/span&gt;wheel&lt;span class="o"&gt;)&lt;/span&gt;
+sh-5.0$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Setting SUID in the Binary&lt;/h2&gt;
+&lt;p&gt;However, if we add a call to SUID inside the binary we get slightly
+different behaviour&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;sys/types.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+
+&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+  &lt;span class="n"&gt;setuid&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="n"&gt;system&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/bin/sh&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Compile and Run, which doesn't help us:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop ~/Coding/Testing$ ls -l                                                                            
+total &lt;span class="m"&gt;32&lt;/span&gt;
+-rwxr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; dang dang &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:53 a.out
+-rwxr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; dang dang     &lt;span class="m"&gt;8&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:41 cat
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:52 Testcode.c
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;141&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:40 Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                                                          
+sh-5.0$ id
+&lt;span class="nv"&gt;uid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;gid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;groups&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt;,977&lt;span class="o"&gt;(&lt;/span&gt;docker&lt;span class="o"&gt;)&lt;/span&gt;,987&lt;span class="o"&gt;(&lt;/span&gt;uucp&lt;span class="o"&gt;)&lt;/span&gt;,998&lt;span class="o"&gt;(&lt;/span&gt;wheel&lt;span class="o"&gt;)&lt;/span&gt;
+sh-5.0$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we also put the file system SUID bit (and owner to root) we get the desired result&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop ~/Coding/Testing$ ls -l                                                                            
+total &lt;span class="m"&gt;36&lt;/span&gt;
+-rwsr-sr-x &lt;span class="m"&gt;1&lt;/span&gt; root dang &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:53  a.out
+-rwxr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; dang dang     &lt;span class="m"&gt;8&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:41  cat
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:54 &lt;span class="s1"&gt;&amp;#39;#Testcode.c#&amp;#39;&lt;/span&gt;
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:52  Testcode.c
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;141&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:40  Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                                                          
+sh-5.0# id
+&lt;span class="nv"&gt;uid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;root&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;gid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;groups&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt;,977&lt;span class="o"&gt;(&lt;/span&gt;docker&lt;span class="o"&gt;)&lt;/span&gt;,987&lt;span class="o"&gt;(&lt;/span&gt;uucp&lt;span class="o"&gt;)&lt;/span&gt;,998&lt;span class="o"&gt;(&lt;/span&gt;wheel&lt;span class="o"&gt;)&lt;/span&gt;
+sh-5.0# 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;So it looks like we need to have SUID set in both the file, and the
+file system.&lt;/p&gt;
+&lt;h2&gt;Dealing with Other users.&lt;/h2&gt;
+&lt;p&gt;Lets add a third "Testuser" to the mix (Note, we need to set
+permissions of the &lt;code&gt;~/Coding/TEsting&lt;/code&gt; directory to 777 to allow
+the testuser to access the files.&lt;/p&gt;
+&lt;p&gt;We keep both &lt;code&gt;setuserid&lt;/code&gt; in the source and the file system SUID
+bit, and the standard privesc still works as expected.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop ~/Coding/Testing$ ./a.out                                  
+sh-5.0# whoami
+root
+sh-5.0# 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop Testing&lt;span class="o"&gt;]&lt;/span&gt;$ ./a.out 
+sh-5.0# whoami
+root
+sh-5.0# &lt;span class="nb"&gt;exit&lt;/span&gt;
+&lt;span class="nb"&gt;exit&lt;/span&gt;
+&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop Testing&lt;span class="o"&gt;]&lt;/span&gt;$ &lt;span class="nb"&gt;pwd&lt;/span&gt;
+/home/dang/Coding/Testing
+&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop Testing&lt;span class="o"&gt;]&lt;/span&gt;$ ./a.out 
+sh-5.0# whoami
+root
+sh-5.0# 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Setting User ID to another user.&lt;/h2&gt;
+&lt;p&gt;If we modify the userid in the binary (for example to dang).
+And then set the file system SUID bit to that user the elevation doesn't work&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;sh-5.0$ ls -l
+total &lt;span class="m"&gt;28&lt;/span&gt;
+-rwsr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; dang dang &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;18&lt;/span&gt;:01 a.out
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; root root   &lt;span class="m"&gt;139&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;18&lt;/span&gt;:01 Testcode.c
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; root root   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;17&lt;/span&gt;:43 Testcode.c~
+sh-5.0$ ./a.out 
+sh-5.0$ id
+&lt;span class="nv"&gt;uid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1001&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;testuser&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;gid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1001&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;testuser&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;groups&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1001&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;testuser&lt;span class="o"&gt;)&lt;/span&gt;
+sh-5.0$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;However set the File system owner to root, and the SUID bit and we get the userchange.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;sh-5.0$ ls -l
+total &lt;span class="m"&gt;28&lt;/span&gt;
+-rwsr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; root dang &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;18&lt;/span&gt;:01 a.out
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; root root   &lt;span class="m"&gt;139&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;18&lt;/span&gt;:01 Testcode.c
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; root root   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;17&lt;/span&gt;:43 Testcode.c~
+sh-5.0$ ./a.out 
+sh-5.0$ id
+&lt;span class="nv"&gt;uid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;gid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1001&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;testuser&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;groups&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1001&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;testuser&lt;span class="o"&gt;)&lt;/span&gt;
+sh-5.0$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This is behaviour is not continued with Group permissions&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop SUIDTest&lt;span class="o"&gt;]&lt;/span&gt;$ ls -l
+total &lt;span class="m"&gt;28&lt;/span&gt;
+-rwxr-sr-x &lt;span class="m"&gt;1&lt;/span&gt; dang root &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;18&lt;/span&gt;:01 a.out
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; root root   &lt;span class="m"&gt;139&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;18&lt;/span&gt;:01 Testcode.c
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; root root   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;17&lt;/span&gt;:43 Testcode.c~
+&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop SUIDTest&lt;span class="o"&gt;]&lt;/span&gt;$ ./a.out 
+sh-5.0$ whoami
+testuser
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;So It looks like we need to have a root user, regardless of the user
+we are trying to SUID to.&lt;/p&gt;
+&lt;h1&gt;Even Weirder.  Doesn't appear to work in TMP.&lt;/h1&gt;
+&lt;p&gt;So we compare the same, setup in user dir and /tmp/&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop Demo&lt;span class="o"&gt;]&lt;/span&gt;$ &lt;span class="nb"&gt;pwd&lt;/span&gt;
+/tmp/Demo
+&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop Demo&lt;span class="o"&gt;]&lt;/span&gt;$ ls -l
+total &lt;span class="m"&gt;24&lt;/span&gt;
+-rwsr-sr-x &lt;span class="m"&gt;1&lt;/span&gt; root root &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;22&lt;/span&gt;:36 a.out
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:52 Testcode.c
+&lt;span class="o"&gt;[&lt;/span&gt;testuser@dang-laptop Demo&lt;span class="o"&gt;]&lt;/span&gt;$ ./a.out 
+sh-5.0$ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop ~/Coding/Testing$ ls -l                                    
+total &lt;span class="m"&gt;32&lt;/span&gt;
+-rwsr-sr-x &lt;span class="m"&gt;1&lt;/span&gt; root root &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;22&lt;/span&gt;:37 a.out
+-rwxr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; dang dang     &lt;span class="m"&gt;8&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:41 cat
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;22&lt;/span&gt;:34 Testcode.c
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; dang dang   &lt;span class="m"&gt;141&lt;/span&gt; Mar &lt;span class="m"&gt;19&lt;/span&gt; &lt;span class="m"&gt;19&lt;/span&gt;:40 Testcode.c~
+dang@dang-laptop ~/Coding/Testing$ ./a.out                                  
+sh-5.0# 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;What about other Directories&lt;/p&gt;
+&lt;p&gt;Stashing the file in OPT appears to work for both users&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;dang@dang-laptop /opt/SUIDTest$ ls -l                                                                               
+total &lt;span class="m"&gt;24&lt;/span&gt;
+-rwsr-xr-x &lt;span class="m"&gt;1&lt;/span&gt; root root &lt;span class="m"&gt;16624&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;17&lt;/span&gt;:43 a.out
+-rw-r--r-- &lt;span class="m"&gt;1&lt;/span&gt; root root   &lt;span class="m"&gt;136&lt;/span&gt; Mar &lt;span class="m"&gt;20&lt;/span&gt; &lt;span class="m"&gt;17&lt;/span&gt;:43 Testcode.c
+dang@dang-laptop /opt/SUIDTest$ id                                                                                  
+&lt;span class="nv"&gt;uid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;gid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;groups&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt;,977&lt;span class="o"&gt;(&lt;/span&gt;docker&lt;span class="o"&gt;)&lt;/span&gt;,987&lt;span class="o"&gt;(&lt;/span&gt;uucp&lt;span class="o"&gt;)&lt;/span&gt;,998&lt;span class="o"&gt;(&lt;/span&gt;wheel&lt;span class="o"&gt;)&lt;/span&gt;
+dang@dang-laptop /opt/SUIDTest$ ./a.out                                                                             
+sh-5.0# id
+&lt;span class="nv"&gt;uid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;root&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;gid&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="nv"&gt;groups&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;dang&lt;span class="o"&gt;)&lt;/span&gt;,977&lt;span class="o"&gt;(&lt;/span&gt;docker&lt;span class="o"&gt;)&lt;/span&gt;,987&lt;span class="o"&gt;(&lt;/span&gt;uucp&lt;span class="o"&gt;)&lt;/span&gt;,998&lt;span class="o"&gt;(&lt;/span&gt;wheel&lt;span class="o"&gt;)&lt;/span&gt;
+sh-5.0# 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;Summary&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;SUID no longer appears to work on a purely file system basis&lt;/li&gt;
+&lt;li&gt;Need to set userid inside the binary also.&lt;/li&gt;
+&lt;li&gt;Appears we need the owner of the file to be root, for any kind of
+  SUID to happen.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Not sure how I feel about this, while its probably a good idea to force
+the coder set the SUID flag in both the binary, and the file system,
+other things bother me.  Needing the file to be owned by root
+certainly seems a bit strange, and seems likely to lead to cockups.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;NOTE: This is initial thoughts, perhaps doing something other than a
+system call would show more expected behaviour, I will get around to
+testing this soon.&lt;/p&gt;
+&lt;/blockquote&gt;</content><category term="hacking"></category><category term="hacking"></category><category term="linux"></category></entry></feed>

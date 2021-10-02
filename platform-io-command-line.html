@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - Platform IO Command line</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="platform IO" />
+    <meta name="tags" content="coding" />
+    <meta name="tags" content="ARM" />
+    <meta name="tags" content="notes" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/platform-io-command-line.html" rel="bookmark"
+         title="Permalink to Platform IO Command line">Platform IO Command line</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2019-01-08T17:13:17+00:00">
+      Tue 08 January 2019
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/embedded.html">embedded</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/platform-io.html">platform IO</a>
+            <i class="bi bi-tag"></i><a href="/tag/coding.html">coding</a>
+            <i class="bi bi-tag"></i><a href="/tag/arm.html">ARM</a>
+            <i class="bi bi-tag"></i><a href="/tag/notes.html">notes</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <p>As part of my mucking around with ARM based compilers, I have also
+given (https://platformio.org)[Platform IO] a crack.  First
+impressions are it is much nicer to use than the MBED command line
+equivalent.</p>
+<h1>Installation</h1>
+<p>NOTE:  You will need the relevant ARM tool chains. </p>
+<h2>Platform IO setup</h2>
+<p>Requires Python 2, as always I like to make use of a virtualenv to save
+my global python ending up full of cruft.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="o">%</span><span class="w"> </span><span class="n">virtualenv</span><span class="w"> </span><span class="o">-</span><span class="n">p</span><span class="w"> </span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">python2</span><span class="w"> </span><span class="n">env</span><span class="w"></span>
+</code></pre></div>
+
+<p>Install</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="w">  </span><span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="o">%</span><span class="w">  </span><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">platformio</span><span class="w"></span>
+</code></pre></div>
+
+<p>Check it works</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="w">  </span><span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="o">%</span><span class="w"> </span><span class="n">platformio</span><span class="w"></span>
+<span class="k">Usage</span><span class="err">:</span><span class="w"> </span><span class="n">platformio</span><span class="w"> </span><span class="o">[</span><span class="n">OPTIONS</span><span class="o">]</span><span class="w"> </span><span class="n">COMMAND</span><span class="w"> </span><span class="o">[</span><span class="n">ARGS</span><span class="o">]</span><span class="p">...</span><span class="w"></span>
+
+<span class="nl">Options</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="o">--</span><span class="n">version</span><span class="w">          </span><span class="n">Show</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="k">exit</span><span class="p">.</span><span class="w"></span>
+<span class="w">  </span><span class="o">-</span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="o">--</span><span class="n">force</span><span class="w">        </span><span class="n">Force</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">accept</span><span class="w"> </span><span class="ow">any</span><span class="w"> </span><span class="n">confirmation</span><span class="w"> </span><span class="n">prompts</span><span class="p">.</span><span class="w"></span>
+<span class="w">  </span><span class="o">-</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">--</span><span class="n">caller</span><span class="w"> </span><span class="nc">TEXT</span><span class="w">  </span><span class="n">Caller</span><span class="w"> </span><span class="n">ID</span><span class="w"> </span><span class="p">(</span><span class="n">service</span><span class="p">).</span><span class="w"></span>
+<span class="w">  </span><span class="o">-</span><span class="n">h</span><span class="p">,</span><span class="w"> </span><span class="o">--</span><span class="n">help</span><span class="w">         </span><span class="n">Show</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">message</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="k">exit</span><span class="p">.</span><span class="w"></span>
+
+<span class="nl">Commands</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="n">account</span><span class="w">   </span><span class="n">Manage</span><span class="w"> </span><span class="n">PIO</span><span class="w"> </span><span class="n">Account</span><span class="w"></span>
+<span class="w">  </span><span class="n">boards</span><span class="w">    </span><span class="n">Embedded</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">Explorer</span><span class="w"></span>
+<span class="w">  </span><span class="n">ci</span><span class="w">        </span><span class="n">Continuous</span><span class="w"> </span><span class="n">Integration</span><span class="w"></span>
+<span class="w">  </span><span class="n">debug</span><span class="w">     </span><span class="n">PIO</span><span class="w"> </span><span class="n">Unified</span><span class="w"> </span><span class="n">Debugger</span><span class="w"></span>
+<span class="w">  </span><span class="n">device</span><span class="w">    </span><span class="n">Monitor</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="n">existing</span><span class="w"></span>
+<span class="w">  </span><span class="n">home</span><span class="w">      </span><span class="n">PIO</span><span class="w"> </span><span class="n">Home</span><span class="w"></span>
+<span class="w">  </span><span class="n">init</span><span class="w">      </span><span class="k">Initialize</span><span class="w"> </span><span class="n">PlatformIO</span><span class="w"> </span><span class="n">project</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="k">update</span><span class="w"> </span><span class="n">existing</span><span class="w"></span>
+<span class="w">  </span><span class="n">lib</span><span class="w">       </span><span class="n">Library</span><span class="w"> </span><span class="n">Manager</span><span class="w"></span>
+<span class="w">  </span><span class="n">platform</span><span class="w">  </span><span class="n">Platform</span><span class="w"> </span><span class="n">Manager</span><span class="w"></span>
+<span class="w">  </span><span class="n">remote</span><span class="w">    </span><span class="n">PIO</span><span class="w"> </span><span class="n">Remote</span><span class="w"></span>
+<span class="w">  </span><span class="n">run</span><span class="w">       </span><span class="n">Process</span><span class="w"> </span><span class="n">project</span><span class="w"> </span><span class="n">environments</span><span class="w"></span>
+<span class="w">  </span><span class="n">settings</span><span class="w">  </span><span class="n">Manage</span><span class="w"> </span><span class="n">PlatformIO</span><span class="w"> </span><span class="n">settings</span><span class="w"></span>
+<span class="w">  </span><span class="n">test</span><span class="w">      </span><span class="k">Local</span><span class="w"> </span><span class="n">Unit</span><span class="w"> </span><span class="n">Testing</span><span class="w"></span>
+<span class="w">  </span><span class="k">update</span><span class="w">    </span><span class="k">Update</span><span class="w"> </span><span class="n">installed</span><span class="w"> </span><span class="n">platforms</span><span class="p">,</span><span class="w"> </span><span class="n">packages</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">libraries</span><span class="w"></span>
+<span class="w">  </span><span class="n">upgrade</span><span class="w">   </span><span class="n">Upgrade</span><span class="w"> </span><span class="n">PlatformIO</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">latest</span><span class="w"> </span><span class="n">version</span><span class="w"></span>
+<span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="w">  </span><span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="w"> </span><span class="err"></span><span class="w"> </span><span class="o">~/</span><span class="n">Documents</span><span class="o">/</span><span class="n">India</span><span class="o">/</span><span class="n">PlatformIO</span><span class="w"> </span><span class="err"></span><span class="w"> </span>
+</code></pre></div>
+
+<h2>Getting More of the Toolchain working</h2>
+<p>Install the Udev Rules file</p>
+<p>https://docs.platformio.org/en/latest/faq.html#platformio-udev-rules</p>
+<blockquote>
+<p>NOTE:  As per usual they suggest directly installing from CURL.  As usual this is a Bad Idea.
+Take a look at the file in Nano to avoid any surprises.</p>
+</blockquote>
+<p>Download and check the file</p>
+<div class="highlight"><pre><span></span><code><span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">curl</span><span class="w"> </span><span class="o">-</span><span class="n">fsSL</span><span class="w"> </span><span class="nl">https</span><span class="p">:</span><span class="o">//</span><span class="n">raw</span><span class="p">.</span><span class="n">githubusercontent</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">platformio</span><span class="o">/</span><span class="n">platformio</span><span class="o">-</span><span class="n">core</span><span class="o">/</span><span class="n">develop</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="mi">99</span><span class="o">-</span><span class="n">platformio</span><span class="o">-</span><span class="n">udev</span><span class="p">.</span><span class="n">rules</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">99</span><span class="o">-</span><span class="n">platformio</span><span class="o">-</span><span class="n">udev</span><span class="p">.</span><span class="n">rules</span><span class="w"></span>
+<span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">nano</span><span class="w"> </span><span class="mi">99</span><span class="o">-</span><span class="n">platformio</span><span class="o">-</span><span class="n">udev</span><span class="p">.</span><span class="n">rules</span><span class="w"> </span>
+</code></pre></div>
+
+<p>Install and update UDEV</p>
+<div class="highlight"><pre><span></span><code><span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">sudo</span><span class="w"> </span><span class="n">cp</span><span class="w"> </span><span class="mi">99</span><span class="o">-</span><span class="n">platformio</span><span class="o">-</span><span class="n">udev</span><span class="p">.</span><span class="n">rules</span><span class="w"> </span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">udev</span><span class="o">/</span><span class="n">rules</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="w"> </span>
+<span class="o">[</span><span class="n">sudo</span><span class="o">]</span><span class="w"> </span><span class="n">password</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nl">dang</span><span class="p">:</span><span class="w"> </span>
+<span class="mi">2</span><span class="w"> </span><span class="n">dang</span><span class="nv">@dang</span><span class="o">-</span><span class="n">laptop</span><span class="w"> </span><span class="o">/</span><span class="n">tmp</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">sudo</span><span class="w"> </span><span class="n">udevadm</span><span class="w"> </span><span class="n">control</span><span class="w"> </span><span class="c1">--reload-rules                                                       dang@dang-laptop /tmp % sudo udevadm trigger</span>
+</code></pre></div>
+
+<h1>Try one of the Demo Projects</h1>
+<p>Clone the STM toolchain with examples
+https://github.com/platformio/platform-ststm32/tree/master</p>
+<p>As I am interested in using the mbed OS, the blink example (from the Online version)
+looks like a good bet.</p>
+<p><code>platform-ststm32/examples/mbed-blink</code></p>
+<h2>Building the Example</h2>
+<p>Unfortunately, when we try to run the example, </p>
+<p>A Bit afraid of adding this to the Board  Lets try something a bit different
+According to the MBED docs the device I have is supported, but not in the build list</p>
+<div class="highlight"><pre><span></span><code>▶ platformio run -e nucleo_f746zg
+Error: Unknown environment names &#39;nucleo_f746zg&#39;. Valid names are &#39;nucleo_f103rb, disco_l053c8, nucleo_l053r8, nucleo_f767zi, disco_f100rb, mts_dragonfly_f411re, cloud_jam, nucleo_f207zg, cloud jam l4, disco_f303vc, nucleo_f030r8, nucleo_f401re, disco_f407vg, mote_l152rc, elmo_f411re, nucleo_l152re, nucleo_f302r8&#39;
+(env) 
+</code></pre></div>
+
+<p>However according to the Docs it is supported, so lets add a new target platform to the project.
+Taking the definition from an example that has support for the Nucleo F746 (cube32_blink) </p>
+<p>In <code>platformio.ini</code> we add</p>
+<div class="highlight"><pre><span></span><code><span class="k">[env:nucleo_f746zg]</span>
+<span class="na">platform</span> <span class="o">=</span> <span class="s">ststm32</span>
+<span class="na">framework</span> <span class="o">=</span> <span class="s">mbed</span>
+<span class="na">board</span> <span class="o">=</span> <span class="s">nucleo_f746zg</span>
+<span class="na">build_flags</span> <span class="o">=</span> <span class="s">-DF7</span>
+</code></pre></div>
+
+<p>This time building appears to work</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="n">platformio</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="o">-</span><span class="n">e</span><span class="w"> </span><span class="n">nucleo_f746zg</span><span class="w"></span>
+
+<span class="n">Processing</span><span class="w"> </span><span class="n">nucleo_f746zg</span><span class="w"> </span><span class="p">(</span><span class="nl">platform</span><span class="p">:</span><span class="w"> </span><span class="n">ststm32</span><span class="p">;</span><span class="w"> </span><span class="nl">board</span><span class="p">:</span><span class="w"> </span><span class="n">nucleo_f746zg</span><span class="p">;</span><span class="w"> </span><span class="nl">framework</span><span class="p">:</span><span class="w"> </span><span class="n">mbed</span><span class="p">)</span><span class="w"></span>
+<span class="o">---------------------------------------------------------------------------------------------------------------------</span><span class="w"></span>
+<span class="n">Verbose</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">enabled</span><span class="w"> </span><span class="n">via</span><span class="w"> </span><span class="err">`</span><span class="o">-</span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="o">--</span><span class="n">verbose</span><span class="err">`</span><span class="w"> </span><span class="k">option</span><span class="w"></span>
+<span class="nl">CONFIGURATION</span><span class="p">:</span><span class="w"> </span><span class="nl">https</span><span class="p">:</span><span class="o">//</span><span class="n">docs</span><span class="p">.</span><span class="n">platformio</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">page</span><span class="o">/</span><span class="n">boards</span><span class="o">/</span><span class="n">ststm32</span><span class="o">/</span><span class="n">nucleo_f746zg</span><span class="p">.</span><span class="n">html</span><span class="w"></span>
+<span class="nl">PLATFORM</span><span class="p">:</span><span class="w"> </span><span class="n">ST</span><span class="w"> </span><span class="n">STM32</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">ST</span><span class="w"> </span><span class="n">Nucleo</span><span class="w"> </span><span class="n">F746ZG</span><span class="w"></span>
+<span class="nl">HARDWARE</span><span class="p">:</span><span class="w"> </span><span class="n">STM32F746ZGT6</span><span class="w"> </span><span class="mi">216</span><span class="n">MHz</span><span class="w"> </span><span class="mi">320</span><span class="n">KB</span><span class="w"> </span><span class="n">RAM</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="n">MB</span><span class="w"> </span><span class="n">Flash</span><span class="p">)</span><span class="w"></span>
+<span class="p">...</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">SNIP</span><span class="o">&gt;</span><span class="w"></span>
+<span class="p">...</span><span class="w"></span>
+<span class="o">=====================================================</span><span class="w"> </span><span class="o">[</span><span class="n">SUMMARY</span><span class="o">]</span><span class="w"> </span><span class="o">=====================================================</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">disco_f407vg</span><span class="w">                </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">disco_f303vc</span><span class="w">                </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">disco_f100rb</span><span class="w">                </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_f030r8</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_f103rb</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_f207zg</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_f302r8</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_f401re</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_f767zi</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_l053r8</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_l152re</span><span class="w">               </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">disco_l053c8</span><span class="w">                </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">elmo_f411re</span><span class="w">                 </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">mote_l152rc</span><span class="w">                 </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">mts_dragonfly_f411re</span><span class="w">        </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">cloud_jam</span><span class="w">                   </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">cloud</span><span class="w"> </span><span class="n">jam</span><span class="w"> </span><span class="n">l4</span><span class="w">                </span><span class="o">[</span><span class="n">SKIP</span><span class="o">]</span><span class="w"></span>
+<span class="n">Environment</span><span class="w"> </span><span class="n">nucleo_f746zg</span><span class="w">               </span><span class="o">[</span><span class="n">SUCCESS</span><span class="o">]</span><span class="w"></span>
+<span class="o">============================================</span><span class="w"> </span><span class="o">[</span><span class="n">SUCCESS</span><span class="o">]</span><span class="w"> </span><span class="n">Took</span><span class="w"> </span><span class="mf">7.50</span><span class="w"> </span><span class="n">seconds</span><span class="w"> </span><span class="o">===</span><span class="w"></span>
+</code></pre></div>
+
+<p>TO Upload to the board using we need to specify the location to upload</p>
+<div class="highlight"><pre><span></span><code>▶ udiskie-mount /dev/sda 
+mounted /org/freedesktop/UDisks2/block_devices/sda on /run/media/dang/NODE_F746ZG
+</code></pre></div>
+
+<p>And It looks like everything works as Required</p>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

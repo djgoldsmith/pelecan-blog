@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - Detecting JS Alerts In Wargames</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="Teaching" />
+    <meta name="tags" content="CUEH" />
+    <meta name="tags" content="Hacking" />
+    <meta name="tags" content="XSS" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/detecting-js-alerts-in-wargames.html" rel="bookmark"
+         title="Permalink to Detecting JS Alerts In Wargames">Detecting JS Alerts In Wargames</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2019-05-16T11:39:13+01:00">
+      Thu 16 May 2019
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/ctf.html">ctf</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/teaching.html">Teaching</a>
+            <i class="bi bi-tag"></i><a href="/tag/cueh.html">CUEH</a>
+            <i class="bi bi-tag"></i><a href="/tag/hacking.html">Hacking</a>
+            <i class="bi bi-tag"></i><a href="/tag/xss.html">XSS</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <p>A major part of my teaching philosophy is "teaching through
+doing". It's my own personal belief that we learn better (and
+certainly with practical skills like pen-testing) through practice.  I
+feel this helps us get familiar with a class of problem, and each time
+we encounter something similar, we can use the knowledge of this to solve
+harder issues.</p>
+<p>One topic I teach is XSS (Cross Site Scripting), this is where we can
+place malicious code on a website, that is then activated when someone
+visits.  This usually comes about when the developer doesn't check
+user submitted data correctly, allowing JavaScript to be included.</p>
+<p>A traditional (not nasty) way of checking for if XSS exists, is to pup
+up an alert box, this gives some nice visual feedback that the attack
+has worked, without causing any issues to others.  Normally, I would
+set up a sequence of challenges with varying levels of input
+sanitisation, then ask the students to submit whatever they used to
+create the alert.</p>
+<p>This has some overhead, as there can be many ways working round the
+sanitisation, meaning there isn't ONE answer, so its not really
+suitable for an automated CTF (ie I have to do the leg work and check
+the answer is correct). </p>
+<p>Inspired by Googles XSS game <a href="https://xss-game.appspot.com/">https://xss-game.appspot.com/</a>, I tried
+to work out a way to make this better fit the CTF.</p>
+<h2>Detecting Alerts using JavaScript.</h2>
+<p>Turns out its pretty easy to detect an alert using JavaScript,
+we simply overload the alert function:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//Stash a reference to the window.alert function</span>
+<span class="kd">var</span> <span class="nx">originalAlert</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">alert</span><span class="p">;</span>
+
+<span class="c1">//Overload the window.alert.  </span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">alert</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//Display some message to the student, we could use the s param to show the specified message.</span>
+    <span class="nx">originalAlert</span><span class="p">(</span><span class="s2">&quot;Congratulations, you executed an alert:\n&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>This is pretty cool, gives us some scope for customisation, which
+means I can probably add a Flag.</p>
+<h2>Customising the Flag text.</h2>
+<p>My first thoughts were to do this through some kind of text mangling
+(loving template languages link Jinja), have each XSS challenge
+inject the flag into the page, then have the alert display it.
+This falls over through a couple of reasons:</p>
+<ul>
+<li>The students quickly learn to "Use the Source" and any sensible
+    way of encoding the string would be visible, and even if
+    obsfrucated, most should recognise the encoding.</li>
+<li>I don't know a huge amount of JavaScript, but even I know Globals
+    are a BadThing(TM)</li>
+</ul>
+<p>Had a few other ideas but ended up using AJAX, Its one of the things
+that JS was intended for, and it gives me some control over the logic
+for presenting the flags.  (And if the students manage to de-obfuscate
+the JS, they learn about API exploitation, so its a win)</p>
+<p>The plan was:</p>
+<ol>
+<li>Detect the Alert being triggered</li>
+<li>Use JS to call some API to fetch the flag</li>
+<li>.....</li>
+<li>Profit</li>
+</ol>
+<p>Resulting in the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//Stash window.alert link</span>
+<span class="kd">var</span> <span class="nx">originalAlert</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">alert</span><span class="p">;</span>
+
+<span class="c1">//Overload alert function</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">alert</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">originalAlert</span><span class="p">(</span><span class="s2">&quot;Congratulations, you executed an alert:\n&quot;</span><span class="p">);</span>
+
+    <span class="c1">// Add some data to the API payload</span>
+    <span class="c1">// Scope for some anti dissasembly here</span>
+    <span class="nx">data</span> <span class="o">=</span> <span class="p">{</span><span class="nx">AlertSuccess</span><span class="o">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+            <span class="nx">Checksum</span><span class="o">:</span> <span class="s2">&quot;Redacted :)&quot;</span><span class="p">,</span>
+            <span class="nx">AlertMessage</span><span class="o">:</span> <span class="nx">s</span><span class="p">}</span>
+
+    <span class="c1">//Make a Request to a separate API, and display the data.</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;scripts/xss-process.php&quot;</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">result</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="nx">msgdiv</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#outputdiv&quot;</span><span class="p">)[</span><span class="mf">0</span><span class="p">]</span>
+        <span class="nx">msgdiv</span><span class="p">.</span><span class="nx">innerHTML</span><span class="o">=</span><span class="s2">&quot;&lt;em&gt;Congratulations!&lt;/em&gt; The Flag for this level is: &quot;</span> <span class="o">+</span> <span class="nx">result</span>
+        <span class="nx">msgdiv</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;alert alert-success&quot;</span>
+    <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Again this works quite nicely, the <em>data</em> part lets me send data (such
+as checksums to make disassembly harder) to the API, and grab the
+relevant flag.  I keep track of the Levels through session cookies,
+and use this to make sure the correct flag is returned.</p>
+<p>It's not flawless, and the whole Checksum thing needs thinking about,
+but again, the folks who can de-obfuscate the code and reverse the
+API, probably don't need to brush up on basic XSS techniques.</p>
+<h2>Detecting Alerts from the Console.</h2>
+<p>Its at this point, its time to think "What Would Scooby Doo?".</p>
+<blockquote>
+<p>While the Scooby thing is a nice, line. It was more How will Greg
+troll me when he gets his hands on this?</p>
+</blockquote>
+<p>Time to think like a Hacker, its a nice Idea, but how can I break it?
+Turns out its pretty easy:</p>
+<ol>
+<li>Open the Console</li>
+<li>Type <code>alert();</code></li>
+<li>....</li>
+<li>Profit.</li>
+</ol>
+<blockquote>
+<p>While I say I was inspired by the XSS game, it was also a few months
+ago I last played with it. As I write this, took a look to see if it
+was vulnerable to the console based alert (it isn't).  Looks like
+they use Iframes, which is something to take a look at. </p>
+</blockquote>
+<p>Anyway, mutch Thruching around reading about how different browsers
+work, Turns out its quite easy to detect if chrome uses the console
+(it has a keys method). Otherwise we need to bugger about inspecting
+the stack to work out where the function was called from (Thanks <a href="https://stackoverflow.com/questions/24966759/how-can-we-know-if-a-function-is-called-from-console-or-from-source-code">stack
+overflow</a>)</p>
+<p>So we add a method to detect whether the alert was called from the console()</p>
+<div class="highlight"><pre><span></span><code><span class="kd">function</span> <span class="nx">fromConsole</span><span class="p">()</span>
+<span class="p">{</span>
+
+    <span class="c1">//So Chrome has this thing called Keys that we can use to detect.</span>
+    <span class="kd">var</span> <span class="nx">wasConsole</span> <span class="o">=</span> <span class="ow">typeof</span> <span class="nx">keys</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">keys</span><span class="p">.</span><span class="nx">toString</span><span class="p">().</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;Command Line API&#39;</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mf">1</span>
+    <span class="c1">//console.log(&quot;From Console &quot; + fromConsole)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">wasConsole</span><span class="p">){</span>
+    <span class="k">return</span> <span class="kc">true</span>
+    <span class="p">}</span>
+
+    <span class="c1">//Otherwise use the approach from Stack</span>
+    <span class="kd">var</span> <span class="nx">stack</span><span class="p">;</span>
+
+    <span class="k">try</span>
+    <span class="p">{</span>
+       <span class="c1">// Throwing the error for Safari&#39;s sake, in Chrome and Firefox</span>
+       <span class="c1">// var stack = new Error().stack; is sufficient.</span>
+       <span class="k">throw</span> <span class="ow">new</span> <span class="ne">Error</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nx">stack</span> <span class="o">=</span> <span class="nx">e</span><span class="p">.</span><span class="nx">stack</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">stack</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+
+    <span class="c1">//var stack = new Error().stack;</span>
+    <span class="kd">var</span> <span class="nx">lines</span> <span class="o">=</span> <span class="nx">stack</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">&quot;\n&quot;</span><span class="p">);</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mf">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">lines</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">lines</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">&quot;at Object.InjectedScript.&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>   <span class="c1">// Chrome console</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">lines</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">&quot;@debugger eval code&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>   <span class="c1">// Firefox console</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">lines</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">&quot;_evaluateOn&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>   <span class="c1">// Safari console</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>And modify the alert script to deal with it.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//Stash window.alert link</span>
+<span class="kd">var</span> <span class="nx">originalAlert</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">alert</span><span class="p">;</span>
+
+<span class="c1">//Overload alert function</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">alert</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">fromConsole</span><span class="p">())</span> <span class="p">{</span>
+        <span class="nx">originalAlert</span><span class="p">(</span><span class="s2">&quot;You need to Tigger the Alert using XSS, not the console:\n&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span><span class="p">{</span>
+        <span class="nx">originalAlert</span><span class="p">(</span><span class="s2">&quot;Congratulations, you executed an alert:\n&quot;</span><span class="p">);</span>
+
+        <span class="c1">// Add some data to the API payload</span>
+        <span class="c1">// Scope for some anti dissasembly here</span>
+        <span class="nx">data</span> <span class="o">=</span> <span class="p">{</span><span class="nx">AlertSuccess</span><span class="o">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span>
+               <span class="nx">Checksum</span><span class="o">:</span> <span class="s2">&quot;Redacted :)&quot;</span><span class="p">,</span>
+               <span class="nx">AlertMessage</span><span class="o">:</span> <span class="nx">s</span><span class="p">}</span>
+
+       <span class="c1">//Make a Request to a seperate API, and display the data.</span>
+       <span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;scripts/xss-process.php&quot;</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">result</span> <span class="p">)</span> <span class="p">{</span>
+          <span class="nx">msgdiv</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#outputdiv&quot;</span><span class="p">)[</span><span class="mf">0</span><span class="p">]</span>
+          <span class="nx">msgdiv</span><span class="p">.</span><span class="nx">innerHTML</span><span class="o">=</span><span class="s2">&quot;&lt;em&gt;Congratulations!&lt;/em&gt; The Flag for this level is: &quot;</span> <span class="o">+</span> <span class="nx">result</span>
+          <span class="nx">msgdiv</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="s2">&quot;alert alert-success&quot;</span>
+       <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Which works pretty nicely.  Add the relevant codez to the
+<code>xss-process.php</code> page, and the students can have per level flags.</p>
+<h1>Summary</h1>
+<p>Its not the cleanest code, but I don't claim to be a web developer :p</p>
+<p>But we have a method to detect whether alert boxes have been triggered
+through XSS based attacks.  This lets me add flags on a per challenge
+basis for my lessons.</p>
+<p>There are still a few flaws, The whole checksum thing is not the best
+approach, but it should be enough to stop any casual "cheating", (if
+you call reverse engineering obfuscated JS, then the remote API
+cheating)</p>
+<p>Biggest issue is that It doesn't work in Edge (although not sure about
+new "chrome" based edge),  I need to take a better look at that.</p>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

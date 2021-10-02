@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Dan Quixote Codes - Notes and Cheatsheets</title><link href="https://dan.quixote.codes/" rel="alternate"></link><link href="https://dan.quixote.codes/feeds/notes-and-cheatsheets.atom.xml" rel="self"></link><id>https://dan.quixote.codes/</id><updated>2020-12-18T12:00:00+00:00</updated><subtitle>Adventures in Teaching, Programming, and Cyber Security.</subtitle><entry><title>Moving from master to main in Git</title><link href="https://dan.quixote.codes/moving-from-master-to-main-in-git.html" rel="alternate"></link><published>2020-12-18T12:00:00+00:00</published><updated>2020-12-18T12:00:00+00:00</updated><author><name>DanG</name></author><id>tag:dan.quixote.codes,2020-12-18:/moving-from-master-to-main-in-git.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;Making the default branch &lt;strong&gt;main&lt;/strong&gt; instead of &lt;strong&gt;master&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;</summary><content type="html">&lt;p&gt;For a while now been using &lt;strong&gt;Main&lt;/strong&gt; rather than &lt;strong&gt;Master&lt;/strong&gt; when it comes to my
+Git repos. &lt;/p&gt;
+&lt;p&gt;Its a trivial thing to do, and while its still a bit weird (10+ years
+of git muscle memory) to use, if it stops one person feeling
+uncomfortable then its worth it&lt;sup id="fnref:muscle-excuse"&gt;&lt;a class="footnote-ref" href="#fn:muscle-excuse"&gt;1&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+&lt;h2&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;There has been lots of discussion around some of the terminology in
+Computer Science.  With some of the words we have used to describe
+things may or may not be suitable for the modern world.&lt;/p&gt;
+&lt;p&gt;While (personally) I think some of it is an over-reaction. Just having
+the word Black in something doesn't automatically make it racist.  I
+am 99% sure that there was never any offence intended when first
+created. &lt;/p&gt;
+&lt;p&gt;However, If it might cause offence, and its easy for me to change a
+small bit of behaviour, why not.  Being reasonable, and dealing with
+others points of view is what makes civilisation work&lt;sup id="fnref:not-an-excuse"&gt;&lt;a class="footnote-ref" href="#fn:not-an-excuse"&gt;2&lt;/a&gt;&lt;/sup&gt;.&lt;/p&gt;
+&lt;p&gt;Language is constantly evolving, so kicking up a fuss about you not
+being able to call something master "Because we always have", when it
+has no real impact on life, and is trivial to implement seems unreasonable.&lt;/p&gt;
+&lt;p&gt;The &lt;a href="https://www.ncsc.gov.uk/blog-post/terminology-its-not-black-and-white"&gt;NCSC&lt;/a&gt; 
+have a great blog post on a the whole "whitelist", "blacklist" issue.&lt;/p&gt;
+&lt;h1&gt;Commands for changing Repo preferences&lt;/h1&gt;
+&lt;h2&gt;Using Main by Default on the Git Command line&lt;/h2&gt;
+&lt;p&gt;A trivial change we can make via the global git configuration&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;$ git config --global init.defaultBranch main
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Modifying existing repo's to use main&lt;/h2&gt;
+&lt;p&gt;If we have older repositories they may use the old master by default.
+To change this to main by &lt;em&gt;moving&lt;/em&gt; the branch.  This should retain all the history&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;$ git branch -m master main
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then push with &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;$ git push -u origin main
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;GitHub and GitHub enterprise&lt;/h2&gt;
+&lt;p&gt;Our last change is to the central repository.&lt;/p&gt;
+&lt;p&gt;By default full fat GitHub now uses main by default for all new repositories.&lt;/p&gt;
+&lt;p&gt;However, our Enterprise doesn't yet and defaults to master. We may
+also want to update older repo's, to use the new naming scheme.&lt;/p&gt;
+&lt;p&gt;We can do this under &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Settings&lt;ul&gt;
+&lt;li&gt;Branches&lt;/li&gt;
+&lt;li&gt;Change Default Branch&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img alt="Git Options" src="https://dan.quixote.codes/images/GitMain.png"&gt;&lt;/p&gt;
+&lt;div class="footnote"&gt;
+&lt;hr&gt;
+&lt;ol&gt;
+&lt;li id="fn:muscle-excuse"&gt;
+&lt;p&gt;Muscle memory isn't an excuse either.  If your old enough to be really attached to master, your probably old enough to have converted through the CVS / Subversion / Git chain,  you managed to cope then, so I am sure you can deal with it now.&amp;#160;&lt;a class="footnote-backref" href="#fnref:muscle-excuse" title="Jump back to footnote 1 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id="fn:not-an-excuse"&gt;
+&lt;p&gt;However, this is not an justification for a general "It offends me, so you cant use it" approach.  This seems to come up a counter argument against this sort of stuff (usually by the sort of people who take great delight in moaning about this sort of thing, while calling everyone else snowflake).  Yes calling something a &lt;strong&gt;main&lt;/strong&gt; rather than &lt;strong&gt;master&lt;/strong&gt; might offend you, but why?  Does it beat, "I feel uncomfortable using words that could be linked to some pretty nasty parts of history".&amp;#160;&lt;a class="footnote-backref" href="#fnref:not-an-excuse" title="Jump back to footnote 2 in the text"&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;</content><category term="Notes and Cheatsheets"></category><category term="git"></category><category term="cli"></category></entry></feed>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - Docker for teaching EH</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="Teaching" />
+    <meta name="tags" content="CUEH" />
+    <meta name="tags" content="Hacking" />
+    <meta name="tags" content="Docker" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/docker-for-teaching-eh.html" rel="bookmark"
+         title="Permalink to Docker for teaching EH">Docker for teaching EH</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2019-06-25T13:27:19+01:00">
+      Tue 25 June 2019
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/teaching.html">teaching</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/teaching.html">Teaching</a>
+            <i class="bi bi-tag"></i><a href="/tag/cueh.html">CUEH</a>
+            <i class="bi bi-tag"></i><a href="/tag/hacking.html">Hacking</a>
+            <i class="bi bi-tag"></i><a href="/tag/docker.html">Docker</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <p>Those who know me know I like docker, its simplified teaching a lot of
+the hacking examples to the students.  Yes it has some flaws (networking) or
+requires some gnarly workarounds for things, but its a major feature
+of my material now.</p>
+<h2>Example:  The Linux trainer</h2>
+<p>"Inspired" by the work of Under The Wire's bandit.  I built a docker
+based Linux trainer.  This is intended to give the students a way to
+practice the basic commands (they should already know). </p>
+<p>The <a href="/cli-basics-wargame.html">Linux trainer</a> Its relatively standard wargame stuff. SSH into each level, complete a
+task and get the creds for the next. </p>
+<p>Nice thing here is it weighs in at a mighty 190MB.  Compare that to
+the overhead of setting up a VM to host it.</p>
+<p>Feedback on the whole has been positive, few gumble about having to
+use docker itself. (IE typing <code>docker run cueh/nixtrainer</code> can be
+hard) but this was mostly around getting the tools setup.</p>
+<h1>The Good, the Bad and the Ugly.</h1>
+<h2>Benefits</h2>
+<p>The main benefits from my point of view are:</p>
+<ul>
+<li>
+<p>Image size, most of my stuff is built from the same "Base"
+    containers, this means that after the first image download, the
+    base image remains unchanged and all that the students need to
+    download is the content.  For Example: My Base Debian CTF
+    container is around 120MB, after downloading that, its only 5-10MB
+    of data that needs to be grabbed for each challenge.  Compare that
+    to around 1GB for a basic Debian VM.</p>
+</li>
+<li>
+<p>Persistence: (Or the lack of it), containers store whatever
+    changes happen in a thin layer on-top of the image.  This is
+    really cool, as when the students invariably screw something up,
+    they just kill and restart the container.  Everything is reset
+    back to "factory defaults".  Compare this to a VM where we have to
+    either have "snapshots", or some other way of resetting.</p>
+</li>
+<li>
+<p>Speed. On the whole starting containers is <strong>FAST</strong>, a few seconds
+    for something simple using SSH.  Yes things like databases take
+    some time to initialise, but that's the Database itself, rather
+    than docker.</p>
+</li>
+<li>
+<p>Getting <strong>Root</strong>. We all know there is nothing like the feeling of
+    getting root. This is not so much a benefit of docker itself, but
+    I am a bit leaary of giving students root on a VM, especially when
+    there are a set of challenges.  With containers, I tend to break
+    each challenge into a container, and let them get root, meh Its
+    only another 10 Meg for the next challenge.</p>
+</li>
+<li>
+<p>"Platform Independence", the containers can be run on various OS,
+    docker for windows does a pretty good job (although I find it
+    tends to break my exposed ports), Meaning regardless of the base OS,
+    the students still get the benefit.</p>
+</li>
+</ul>
+<h2>So-So</h2>
+<p>Things that can be both good and bad depending on the situation.</p>
+<ul>
+<li>
+<p>Simplicity: This is a bit of a double edged sword, but default the
+   images I use come stripped down.  It means that there are few
+   distractions for the proof of concept. For example, if we are doing
+   anything with cron, cron will be present, otherwise it wont exist.
+   This is nice as it lets students focus on the task, but lacks
+   realism.  It also makes it a PITA to make more complex systems.</p>
+</li>
+<li>
+<p>The One Process per container Philosophy.  I understand why this is
+   a decision, and for the whole agree with it.  However, at times,
+   its a pain to have to plumb stuff together just to allows an Apache
+   Server with SSH.  Especially the hoops I have to jump through with
+   volumes and sharing data.</p>
+</li>
+</ul>
+<h2>The Bad</h2>
+<ul>
+<li>
+<p>Networking, Want to simulate a network of machines?  Welcome to a
+   world of pain.  Problem here is its out of context for what docker
+   is designed to do, but it would be lovely.</p>
+</li>
+<li>
+<p>Doing anything complex requires magic.  Overflows, GDB anything
+   that requires complex privileges, can be a right pain to setup.
+   Much easier to have a VM for this.</p>
+</li>
+<li>
+<p>Container Security.  Forget breakouts, there is a more fundamental
+   problem here, If the student can run the container at home its as
+   simple as using <code>docker exec &lt;words&gt;</code> to get a root
+   shell. Perhaps I am nieve, I trust people not to do this, but.....</p>
+</li>
+</ul>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

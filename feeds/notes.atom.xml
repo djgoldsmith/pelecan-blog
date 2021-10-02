@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Dan Quixote Codes - notes</title><link href="https://dan.quixote.codes/" rel="alternate"></link><link href="https://dan.quixote.codes/feeds/notes.atom.xml" rel="self"></link><id>https://dan.quixote.codes/</id><updated>2020-06-24T22:10:37+01:00</updated><subtitle>Adventures in Teaching, Programming, and Cyber Security.</subtitle><entry><title>Building Papers using Pandoc and Github Actions</title><link href="https://dan.quixote.codes/building-papers-using-pandoc-and-github-actions.html" rel="alternate"></link><published>2020-06-24T22:10:37+01:00</published><updated>2020-06-24T22:10:37+01:00</updated><author><name>DanG</name></author><id>tag:dan.quixote.codes,2020-06-24:/building-papers-using-pandoc-and-github-actions.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;Thoughts on using Github actions to build papers.&lt;/p&gt;
+&lt;/blockquote&gt;</summary><content type="html">&lt;h2&gt;Getting Github Actions to Work&lt;/h2&gt;
+&lt;p&gt;As always, there was a lot of trial and error (and a bit of Cargo-Cult
+programming) while I worked out what was happening.&lt;/p&gt;
+&lt;p&gt;A lot of this stems from how Git deals with the data in your repo.  I
+had assumed that actions would have access to the files in your repo,
+but this is not the case.  Instead it appears that each build runs on
+a "clean" install.  So we need to make sure it has the data available
+by cloning the repo.  This (eventually) makes sense, as it follows a
+standard Git workflow. The same goes for writing data back, we can
+opeate on files, but they dont get added back to the repository, so we
+need to commit and push them back&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Additional Note: There was also the added fun of getting the correct
+dependencies into the Docker Image.  I need the python-filters
+extension.  So had to build a custom version of pandoc/latex
+containing this and host it on dockerhub.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;&lt;span class="c1"&gt;# Trying Workflows and Actions&lt;/span&gt;
+&lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;Compile with Pandoc&lt;/span&gt;
+
+&lt;span class="nt"&gt;on&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;pull_request&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;types&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p p-Indicator"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;closed&lt;/span&gt;&lt;span class="p p-Indicator"&gt;]&lt;/span&gt;
+
+&lt;span class="nt"&gt;jobs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+  &lt;span class="nt"&gt;convert_via_pandoc&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nt"&gt;runs-on&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;ubuntu-18.04&lt;/span&gt;
+    &lt;span class="nt"&gt;steps&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;Checkout repository&lt;/span&gt;
+        &lt;span class="nt"&gt;uses&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;actions/checkout@v2&lt;/span&gt;
+        &lt;span class="nt"&gt;with&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="nt"&gt;persist-credentials&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;false&lt;/span&gt; &lt;span class="c1"&gt;# otherwise, the token used is the GITHUB_TOKEN, instead of your personal token&lt;/span&gt;
+          &lt;span class="nt"&gt;fetch-depth&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;0&lt;/span&gt; &lt;span class="c1"&gt;# otherwise, you will failed to push refs to dest repo&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="nt"&gt;run&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;mkdir output&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;Build Documents&lt;/span&gt;
+        &lt;span class="nt"&gt;uses&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;docker://dang42/pandoc-ieee&lt;/span&gt;
+        &lt;span class="nt"&gt;with&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="nt"&gt;args&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;--filter=pandoc-citeproc&lt;/span&gt;&lt;span class="nv"&gt; &lt;/span&gt;&lt;span class="s"&gt;--filter=templates/tablefilter.py&lt;/span&gt;&lt;span class="nv"&gt; &lt;/span&gt;&lt;span class="s"&gt;--template&lt;/span&gt;&lt;span class="nv"&gt; &lt;/span&gt;&lt;span class="s"&gt;templates/ieee.latex&lt;/span&gt;&lt;span class="nv"&gt; &lt;/span&gt;&lt;span class="s"&gt;-o&lt;/span&gt;&lt;span class="nv"&gt; &lt;/span&gt;&lt;span class="s"&gt;output/output.pdf&lt;/span&gt;&lt;span class="nv"&gt; &lt;/span&gt;&lt;span class="s"&gt;ExamplePaper.md&amp;quot;&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;Commit Files&lt;/span&gt; &lt;span class="c1"&gt;#Save the files&lt;/span&gt;
+        &lt;span class="nt"&gt;run&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p p-Indicator"&gt;|&lt;/span&gt;
+          &lt;span class="no"&gt;git config --local user.name &amp;quot;djgoldsmith&amp;quot;&lt;/span&gt;
+          &lt;span class="no"&gt;git add ./output&lt;/span&gt;
+          &lt;span class="no"&gt;git commit -m &amp;quot;Commit Built paper&amp;quot;&lt;/span&gt;
+      &lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;Push Changes&lt;/span&gt;
+        &lt;span class="nt"&gt;uses&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;ad-m/github-push-action@master&lt;/span&gt;
+        &lt;span class="nt"&gt;with&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="nt"&gt;github_token&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;${{ secrets.GITHUB_TOKEN }}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Future Work&lt;/h2&gt;
+&lt;p&gt;There are a few things I need to polish. In an approximate order.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Like any open source project, the documentation is currently
+    terrible.  Now I know how things work, I will get that resolved
+    ASAP.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Give something back, and add my examples to the Official documentation.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Move the dissertaion template across so it works with this process&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Literate programming.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;</content><category term="notes"></category><category term="Teaching"></category><category term="Github"></category><category term="Pandoc"></category><category term="Docker"></category></entry></feed>
