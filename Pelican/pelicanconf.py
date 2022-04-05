@@ -42,6 +42,8 @@ PLUGINS = ["tag_cloud"]
 TAG_CLOUD_SORTING = 'size'
 TAG_CLOUD_BADGE = True
 
+STATIC_PATHS = ['images', 'extra/CNAME']
+EXTRA_PATH_METADATA = {'extra/CNAME': {'path': 'CNAME'},}
 
 MARKDOWN = {
     'extension_configs': {
