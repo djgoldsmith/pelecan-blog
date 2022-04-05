@@ -30,9 +30,6 @@ Will be posting my write ups of the challenges here:
 
 
 
-
-
-
 ## Final Scoreboard for the Team
 
 ![Pico Scoreboard]({attach}/images/pico2022/pico22_overall.png)
