@@ -182,11 +182,11 @@ Error: Unknown environment names &#39;nucleo_f746zg&#39;. Valid names are &#39;n
 <p>However according to the Docs it is supported, so lets add a new target platform to the project.
 Taking the definition from an example that has support for the Nucleo F746 (cube32_blink) </p>
 <p>In <code>platformio.ini</code> we add</p>
-<div class="highlight"><pre><span></span><code><span class="k">[env:nucleo_f746zg]</span>
-<span class="na">platform</span> <span class="o">=</span> <span class="s">ststm32</span>
-<span class="na">framework</span> <span class="o">=</span> <span class="s">mbed</span>
-<span class="na">board</span> <span class="o">=</span> <span class="s">nucleo_f746zg</span>
-<span class="na">build_flags</span> <span class="o">=</span> <span class="s">-DF7</span>
+<div class="highlight"><pre><span></span><code><span class="k">[env:nucleo_f746zg]</span><span class="w"></span>
+<span class="na">platform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ststm32</span><span class="w"></span>
+<span class="na">framework</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">mbed</span><span class="w"></span>
+<span class="na">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">nucleo_f746zg</span><span class="w"></span>
+<span class="na">build_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">-DF7</span><span class="w"></span>
 </code></pre></div>
 
 <p>This time building appears to work</p>
