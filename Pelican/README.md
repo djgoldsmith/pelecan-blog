@@ -49,3 +49,9 @@ Dan likes Linux, Emacs, Python, the number 42, and cats for thier contraryness. 
 
 
 He has a Sharp Interllect,  good reativity and good intuition, But he has a shortage of patience, and a meger ablilty with social relationships
+
+
+# Pelican Render Math
+
+
+https://github.com/pelican-plugins/render-math

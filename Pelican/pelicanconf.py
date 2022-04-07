@@ -37,8 +37,9 @@ DEFAULT_PAGINATION = 10
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
 
-PLUGIN_PATHS = ["plugins"]
-PLUGINS = ["tag_cloud"]
+#PLUGIN_PATHS = ["plugins"]
+#PLUGINS = ["tag_cloud",
+#           "pelican.plugins.render-math"]
 TAG_CLOUD_SORTING = 'size'
 TAG_CLOUD_BADGE = True
 

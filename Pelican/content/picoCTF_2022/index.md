@@ -27,8 +27,10 @@ Will be posting my write ups of the challenges here:
 
  - [basic-file-exploit (100)]({filename}/picoCTF_2022/Binexp/simple-file.md)
  - [Buffer Overflow 0 (100)]({filename}/picoCTF_2022/Binexp/overflow0.md)
-
-
+ - [Buffer Overflow 1 (200)]({filename}/picoCTF_2022/Binexp/overflow1.md)
+ - [RPS (200)]({filename}/picoCTF_2022/Binexp/RPS.md)
+ - [x-sixty-what (200)]({filename}/picoCTF_2022/Binexp/x60-what.md)
+ - [buffer overflow 2 (300)]({filename}/picoCTF_2022/Binexp/overflow2.md)
 
 ## Final Scoreboard for the Team
 
