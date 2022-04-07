@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dan Quixote Codes - PicoCTF 2022: RPS</title>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Pelican" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">-->
+
+  <!-- Syntax -->
+  <link rel="stylesheet" href="/theme/css/pygment.css">
+
+  <!-- Fonts -->
+  <link rel="stylesheet" href="/theme/css/fonts.css">
+  <!-- Custom bootstrap -->
+  <link rel="stylesheet" href="/theme/css/theme.css">
+   
+
+  
+
+
+    <meta name="tags" content="CTF" />
+    <meta name="tags" content="picoCTF" />
+    <meta name="tags" content="write-up" />
+    <meta name="tags" content="binexp" />
+
+</head>
+
+<body>
+  <div class="container-xxl maincontent">
+
+      <!-- Page Header -->
+      <header>
+	<div class="jumbotron p-3 p-md-5 my-rounded my-highlight d-none d-lg-block">
+          <div class="col-md-9 px-0">
+	    <h1 class="display-1">
+	      Dan Quixote Codes
+	    </h1>
+	    
+	    <p class="lead terminal"> Adventures in Teaching, Programming, and Cyber Security.</p>
+          </div>
+	</div>
+	  
+<nav class="navbar navbar-expand-lg mt-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-lg-none" href="/">Dan Quixote Codes</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navtoggle bi bi-arrows-expand"></span>
+      <!--<span class="navtoggle bi bi-arrows-collapse"></span>-->
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+	  
+	  <a 	     class="nav-link"
+	     href="/">Blog</a>
+        </li>
+      </ul>
+      <ul class="d-flex navbar-nav">
+	<li class="nav-item ml-auto">
+	  <a class="nav-link" href="/pages/about-me.html">About</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>      
+      </header><!-- /#banner -->
+      
+      <div class="row mt-5"> 	<!-- Page Content -->
+	<div class="col">
+    
+    <section id="content" class="body">
+  <header class="terminal">
+    <h2 class="entry-title">
+      <a class="dark-terminal" href="/">~/blog$ </a><a href="/picoctf-2022-rps.html" rel="bookmark"
+         title="Permalink to PicoCTF 2022: RPS">PicoCTF 2022:  RPS</a></h2>
+ 
+  </header>
+
+  
+  <footer class="post-info dark-terminal">
+    <span>Published:</span>
+    <time class="published" datetime="2022-04-07T19:30:00+01:00">
+      Thu 07 April 2022
+    </time>
+    <address class="vcard author">
+      Author       <i class="bi bi-person"></i> <a class="url fn" href="/author/dang.html">DanG</a>
+    </address>
+    <div class="category">
+        In: <a href="/category/picoctf.html">PicoCTF</a>
+    </div>
+    <div class="tags">
+        Tags:
+            <i class="bi bi-tag"></i><a href="/tag/ctf.html">CTF</a>
+            <i class="bi bi-tag"></i><a href="/tag/picoctf.html">picoCTF</a>
+            <i class="bi bi-tag"></i><a href="/tag/write-up.html">write-up</a>
+            <i class="bi bi-tag"></i><a href="/tag/binexp.html">binexp</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content pt-2">
+    <h1>RPS</h1>
+<p>RPS (Rock Paper Scissors) was a 200 point binexp challenge in picoCTF.
+I Really quite enjoyed this one, not too tricksy, and a good reminder that we need to check
+our inputs</p>
+<p>The Program lets the user play a game of Rock Paper Scissors,  if you win 5 times in a row you will get the flag.</p>
+<p>We could leave it to chance (brute force it),  but you chance of winning one game is <span class="math">\(\frac{1}{3}\)</span>
+Meaning to win 5 games in a row its something like this<sup id="fnref:random"><a class="footnote-ref" href="#fn:random">1</a></sup>...</p>
+<div class="math">$$
+{\frac{1}{3}}^5 == \frac{1}{243} == ~0.004
+$$</div>
+<p>Possible,  but pretty improbable.</p>
+<h2>Looking at teh Codez</h2>
+<p>Lets dive into the code and see if there is anything to help us...</p>
+<p>First up we have a couple of arrays to lookup the losing hand based on the the computers choice,</p>
+<div class="highlight"><pre><span></span><code>char* hands[3] = {&quot;rock&quot;, &quot;paper&quot;, &quot;scissors&quot;};
+char* loses[3] = {&quot;paper&quot;, &quot;scissors&quot;, &quot;rock&quot;};
+int wins = 0;
+</code></pre></div>
+
+<p>We get the Players choice and check if they win here</p>
+<div class="highlight"><pre><span></span><code><span class="nb">printf</span>(<span class="s">&quot;Please make your selection (rock/paper/scissors):\n&quot;</span>);
+<span class="nb">r</span> = <span class="n">tgetinput</span>(<span class="n">player_turn</span>, <span class="mi">100</span>);
+
+// <span class="n">Timeout</span> <span class="n">on</span> <span class="n">user</span> <span class="n">input</span>
+<span class="k">if</span>(<span class="nb">r</span> == -<span class="mi">3</span>)
+{
+    <span class="nb">printf</span>(<span class="s">&quot;Goodbye!\n&quot;</span>);
+    <span class="nb">exit</span>(<span class="mi">0</span>);
+}
+
+<span class="n">int</span> <span class="n">computer_turn</span> = <span class="nb">rand</span>() % <span class="mi">3</span>;
+<span class="nb">printf</span>(<span class="s">&quot;You played: %s\n&quot;</span>, <span class="n">player_turn</span>);
+<span class="nb">printf</span>(<span class="s">&quot;The computer played: %s\n&quot;</span>, <span class="n">hands</span>[<span class="n">computer_turn</span>]);
+
+<span class="k">if</span> (<span class="n">strstr</span>(<span class="n">player_turn</span>, <span class="n">loses</span>[<span class="n">computer_turn</span>])) {
+    <span class="n">puts</span>(<span class="s">&quot;You win! Play again?&quot;</span>);
+    <span class="k">return</span> <span class="n">true</span>;
+} <span class="k">else</span> {
+    <span class="n">puts</span>(<span class="s">&quot;Seems like you didn&#39;t win this time. Play again?&quot;</span>);
+    <span class="k">return</span> <span class="n">false</span>;
+}
+</code></pre></div>
+
+<h1>POC</h1>
+<h2>Picking out the issue.</h2>
+<p>No overflows or fun things like that to play with,  so we are going to have to nobble that comparison function.</p>
+<p>What happens here:</p>
+<ol>
+<li>Player supplies input</li>
+<li>Computer Picks a random value between 0-2, <ul>
+<li>uses this as the index to the <code>hands</code> array to make its choice</li>
+<li>The Losing condition is also calculated using the <code>loses</code> array. </li>
+</ul>
+</li>
+<li>The <code>strstr</code> function is used to look for the <strong>lose condition</strong> in the players input. If we <strong>have a match</strong> then the player must have input the thing that beats the computer right.....</li>
+</ol>
+<h2>strstr()</h2>
+<p>The <a href="https://www.tutorialspoint.com/c_standard_library/c_function_strstr.htm">Strstr</a>  function will return:</p>
+<ul>
+<li>the first instance of a string in the target string</li>
+<li>null otherwise.</li>
+</ul>
+<p>So we need to find a way to get his to return True each time.</p>
+<p>The interesting (and exploitable) thing here is how the strings get compared. We don't look for an absolute match, but rather check to see if the players input <em>contains</em> the lose condition<sup id="fnref:reasoning"><a class="footnote-ref" href="#fn:reasoning">2</a></sup>,   this is very different from checking if the players input exactly matches the lose condition.</p>
+<p>This means that the player will win if the lose condition is a <strong>substring</strong> of the players input.</p>
+<p>We can check our theory is correct with the following test harness.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#include &lt;stdio.h&gt;</span><span class="w"></span>
+<span class="c1">#include &lt;string.h&gt;</span><span class="w"></span>
+
+
+<span class="nb nb-Type">int</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="o">//</span><span class="n">Playrs</span><span class="w"> </span><span class="n">Input</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="nb">char</span><span class="w"> </span><span class="n">haystack</span><span class="p">[</span><span class="mi">20</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;rockpaperscissors&quot;</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">   </span><span class="o">//</span><span class="n">Lose</span><span class="w"> </span><span class="n">Condition</span><span class="w"></span>
+<span class="w">   </span><span class="k">const</span><span class="w"> </span><span class="nb">char</span><span class="w"> </span><span class="n">needle</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;rock&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="nb">char</span><span class="w"> </span><span class="o">*</span><span class="n">ret</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">   </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strstr</span><span class="p">(</span><span class="n">haystack</span><span class="p">,</span><span class="w"> </span><span class="n">needle</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">   </span><span class="n">printf</span><span class="p">(</span><span class="s2">&quot;Player input is </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">needle</span><span class="p">);</span><span class="w"></span>
+<span class="w">   </span><span class="n">printf</span><span class="p">(</span><span class="s2">&quot;The substring is: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">   </span><span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+
+<p>Trying our different inputs we get a match on all possible conditions:</p>
+<div class="highlight"><pre><span></span><code>Player input is rock
+The substring is: rockpaperscissors
+
+Player input is rock
+The substring is: rockpaperscissors
+
+Player input is rock
+The substring is: rockpaperscissors
+</code></pre></div>
+
+<h1>The Exploit</h1>
+<p>Again lets make use of pwntools to write our exploit</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="s2">&quot;./a.out&quot;</span><span class="p">)</span>
+<span class="c1">#p = remote(&quot;saturn.picoctf.net&quot;, 56981)</span>
+
+<span class="k">def</span> <span class="nf">playRound</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Play a single round</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s2">&quot;program&quot;</span><span class="p">)</span> <span class="c1">#Get initial data</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data was </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+
+    <span class="c1">#we need to send 1 to play the game</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;1&quot;</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data was </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;rock paper scissors&quot;</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data was Sent&quot;</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s2">&quot;Play again&quot;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Outcome was </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s2">&quot;Type&quot;</span><span class="p">)</span> <span class="c1">#Complex output</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+    <span class="n">playRound</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Running that gives us the flag...</p>
+<div class="highlight"><pre><span></span><code>[*] Flag is: b&#39;?\nType&#39;
+[*] Flag is: b&#39;?\nType&#39;
+[*] Flag is: b&#39;?\nType&#39;
+[*] Flag is: b&#39;?\nType&#39;
+[*] Flag is: b&quot;?\nCongrats, here&#39;s the flag!\r\npicoCTF{50M3_3X7R3M3_1UCK_C85AF58A}\r\nType&quot;
+[*] Flag is: b&quot;?\nCongrats, here&#39;s the flag!\r\npicoCTF{50M3_3X7R3M3_1UCK_C85AF58A}\r\nType&quot;
+[*] Stopped process &#39;./a.out&#39; (pid 283103)
+</code></pre></div>
+
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn:random">
+<p>While a computer is pseudo-random,  its still more random than a human,  odds are different with people playing as they have trends.&#160;<a class="footnote-backref" href="#fnref:random" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:reasoning">
+<p>It seems a reasonably sensible mistake to make.  Perhaps the dev was worried about newlines or stuff from the network stopping a proper string compare working&#160;<a class="footnote-backref" href="#fnref:reasoning" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+  </div><!-- /.entry-content -->
+</section>
+	</div>
+	
+      </div>     </div> 
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+</body>
